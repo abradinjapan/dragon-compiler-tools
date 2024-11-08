@@ -1,0 +1,78 @@
+[ entry point ]
+dragon.main()() = {
+    [ initialization message ]
+    dragon.set("The dragon slumbers...%0a;")(message)
+    dragon.print.buffer_as_string(message)()
+
+    [ print message ]
+    dragon.set("Testing banks...%0A;")(message)
+    dragon.print.buffer_as_string(message)()
+
+    [ test bank ]
+    hello_world.test.bank()()
+}
+
+[ test bank ]
+hello_world.test.bank()() = {
+    [ setup variables ]
+    dragon.set(dragon.integer.5)(increase)
+    dragon.set("Hello Bank!")(message_1)
+    dragon.set("Goodbye Bank!")(message_2)
+
+    [ open bank ]
+    tools.bank.open(increase)(bank)
+
+    [ print bank ]
+    tools.bank.print(bank)()
+    dragon.print.new_line()()
+
+    [ append data to bank ]
+    dragon.set("fog")(message)
+    tools.bank.append(bank, message)(bank)
+    tools.bank.append(bank, message)(bank)
+    tools.bank.append(bank, message)(bank)
+    tools.bank.append(bank, message)(bank)
+    dragon.set("boof")(message)
+    tools.bank.append(bank, message)(bank)
+    tools.bank.append(bank, message)(bank)
+
+    [ print data ]
+    tools.buffer.calculate.end_address(bank:allocation:start, bank:length)(bank.content.end)
+    dragon.pack(bank:allocation:start, bank.content.end)(data !dragon.buffer)
+    dragon.print.buffer_as_string(data)()
+    dragon.print.new_line()()
+
+    [ print bank ]
+    tools.bank.print(bank)()
+    dragon.print.new_line()()
+
+    [ close bank ]
+    tools.bank.close(bank)()
+}
+
+[ test list ]
+hello_world.test.list()() = {
+    [ setup string ]
+    dragon.set(dragon.hexadecimal.64_65_66_67_68_69_6A_6B)(characters) [ "defghijk" ]
+
+    [ test list ]
+    dragon.list.open(dragon.constant.cell.byte_size)(list)
+    dragon.print.debug_cell(list:increase)()
+
+    [ append data ]
+    dragon.set(dragon.integer.0)(index)
+    [ tools.list.insert.cell(list, characters index)(list)
+    tools.list.insert.cell(list, characters index)(list) ]
+
+    [ print buffer contents ]
+    dragon.print.buffer_as_string(list:content)()
+
+    [ print new line ]
+    dragon.print.new_line()()
+
+    [ print list ]
+    tools.list.print(list)()
+
+    [ close list ]
+    dragon.list.close(list)()
+}
