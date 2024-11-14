@@ -3,4 +3,7 @@ dragon.main()() = {
     [ initialization message ]
     dragon.set("The dragon slumbers...%0a;")(message)
     dragon.print.buffer_as_string(message)()
+
+    [ test compiler ]
+    tools.json.compile(message)()
 }

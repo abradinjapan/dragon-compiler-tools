@@ -1,13 +1,129 @@
-[ types ]
-[ head type ]
+[
+    Compile
+]
+[ master type ]
 !tools.json
 (
-    raw !dragon.buffer
-
+    [ translated data ]
+    head_object !dragon.cell [ type TODO ]
 )
 
-[ sub types ]
-[ !tools.json.object
+[ translation data ]
+!tools.json.workspace
 (
-    
-) ]
+    [ error data ]
+    error !tools.json.error,
+
+    [ lexing data ]
+    current_character !dragon.current,
+    lexlings !tools.json.lexlings
+)
+
+[ json compile error ]
+!tools.json.error
+(
+    occured !dragon.cell,
+    message !dragon.buffer,
+    location !tools.json.lexling.location
+)
+
+[ compile ]
+tools.json.compile(text !dragon.buffer)() = {
+    [ setup json ]
+    dragon.pack.null()(json !tools.json)
+
+    [ setup workspace ]
+    dragon.pack.null()(workspace !tools.json.workspace)
+    dragon.pack(text, text:start)(workspace:current_character !dragon.current)
+
+    [ lex ]
+    tools.json.compile.lex(json, workspace)(json, workspace)
+}
+
+
+
+[
+    Lexing
+]
+[ lexlings type ]
+!tools.json.lexlings
+(
+    list !dragon.list, [ !tools.json.lexling ]
+    count !dragon.cell
+)
+
+[ lexling type ]
+!tools.json.lexling
+(
+    raw !dragon.buffer,
+    type !dragon.cell,
+    location !tools.json.lexling.location
+)
+
+[ lexling location ]
+!tools.json.lexling.location
+(
+    file_index !dragon.cell,
+    line_index !dragon.cell,
+    character_index !dragon.cell
+)
+
+[ lexling type structure ]
+!tools.json.lexling.types
+(
+    invalid !dragon.cell,
+    left_square_bracket !dragon.cell,
+    right_square_bracket !dragon.cell,
+    left_curly_bracket !dragon.cell,
+    right_curly_bracket !dragon.cell,
+    string !dragon.cell,
+    integer !dragon.cell,
+    comma !dragon.cell,
+    end_of_file !dragon.cell
+)
+
+[ setup json lexling type structure ]
+tools.json.lexling.types.setup()(types !tools.json.lexling.types) = {
+    [ set values ]
+    dragon.set(dragon.integer.0)(types:invalid)
+    dragon.set(dragon.integer.1)(types:left_square_bracket)
+    dragon.set(dragon.integer.2)(types:right_square_bracket)
+    dragon.set(dragon.integer.3)(types:left_curly_bracket)
+    dragon.set(dragon.integer.4)(types:right_curly_bracket)
+    dragon.set(dragon.integer.5)(types:string)
+    dragon.set(dragon.integer.6)(types:integer)
+    dragon.set(dragon.integer.7)(types:comma)
+    dragon.set(dragon.integer.8)(types:end_of_file)
+}
+
+[ lex json ]
+tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !tools.json, workspace !tools.json.workspace) = {
+    [ setup loop start ]
+    @lexing.loop.start
+
+    [ check if current is in range ]
+    dragon.current.within_range(workspace:current_character, dragon.always)(should_quit)
+    dragon.jump(should_quit, @lexing.loop.end)()
+
+    [ get character ]
+    tools.json.compile.lex.get_next_character(workspace)(workspace, character)
+
+    [ print character ]
+    dragon.print.character(character)()
+    dragon.print.new_line()()
+
+    [ jump to loop start ]
+    dragon.jump(dragon.always, @lexing.loop.start)()
+
+    [ setup lexing loop end ]
+    @lexing.loop.end
+}
+
+[ get character from current ]
+tools.json.compile.lex.get_next_character(workspace !tools.json.workspace)(workspace !tools.json.workspace, character !dragon.cell) = {
+    [ get character ]
+    dragon.address_to_cell(workspace:current_character:progress, dragon.constant.1)(character)
+
+    [ advance progress ]
+    dragon.integer.add(workspace:current_character:progress, dragon.constant.1)(workspace:current_character:progress)
+}
