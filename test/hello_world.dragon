@@ -5,6 +5,11 @@ dragon.main()() = {
     dragon.print.buffer_as_string(message)()
 
     [ test compiler ]
-    dragon.set("{{{}}}")(text)
-    tools.json.compile(text)()
+    [ compile ]
+    dragon.set("{{{}}}%22;[{}DSA{Dskjhnfa}%22;")(text)
+    tools.json.compile(text)(error)
+
+    [ display message ]
+    tools.json.error.print_if_occured(error)()
+    dragon.print.new_line()()
 }

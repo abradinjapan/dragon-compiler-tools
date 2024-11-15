@@ -27,11 +27,29 @@
 (
     occured !dragon.cell,
     message !dragon.buffer,
-    location !tools.json.lexling.location
+    location !tools.text.location
 )
 
+[ print error if error occured ]
+tools.json.error.print_if_occured(error !tools.json.error)() = {
+    @print error:occured = {
+        [ setup strings ]
+        dragon.set("{ ")(header)
+        dragon.set(", ")(separator)
+        dragon.set(" }")(footer)
+        dragon.set("%22;")(quote)
+
+        [ print data ]
+        dragon.print.buffer_as_string(header)()
+        dragon.print.buffer_as_string(quote)()
+        dragon.print.buffer_as_string(error:message)()
+        dragon.print.buffer_as_string(quote)()
+        dragon.print.buffer_as_string(footer)()
+    }
+}
+
 [ compile ]
-tools.json.compile(text !dragon.buffer)() = {
+tools.json.compile(text !dragon.buffer)(error !tools.json.error) = {
     [ setup json ]
     dragon.pack.null()(json !tools.json)
 
@@ -42,6 +60,12 @@ tools.json.compile(text !dragon.buffer)() = {
 
     [ lex ]
     tools.json.compile.lex(json, workspace)(json, workspace)
+
+    [ exit compilation ]
+    @compilation.exit
+
+    [ setup output ]
+    dragon.copy(workspace:error)(error)
 }
 
 
@@ -61,7 +85,7 @@ tools.json.compile(text !dragon.buffer)() = {
 (
     raw !dragon.buffer,
     type !dragon.cell,
-    location !tools.json.lexling.location
+    location !tools.text.location
 )
 
 [ print lexling ]
@@ -80,7 +104,7 @@ tools.json.lexling.print(lexling !tools.json.lexling)() = {
 }
 
 [ lexling location ]
-!tools.json.lexling.location
+!tools.text.location
 (
     file_index !dragon.cell,
     line_index !dragon.cell,
@@ -124,13 +148,15 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     dragon.set(dragon.hexadecimal.7D)(right_curly_bracket)
     dragon.set(dragon.hexadecimal.5B)(left_square_bracket)
     dragon.set(dragon.hexadecimal.5D)(right_square_bracket)
+    dragon.set(dragon.hexadecimal.22)(double_quote)
+    dragon.pack.null()(null_location !tools.text.location)
 
     [ setup loop start ]
     @lexing.loop.start
 
     [ check if current is in range ]
     dragon.current.within_range(workspace:current_character, dragon.always)(should_quit)
-    dragon.jump(should_quit, @lexing.loop.end)()
+    dragon.jump(should_quit, @lexing.loop.exit)()
 
     [ get character ]
     dragon.address_to_cell(workspace:current_character:progress, dragon.constant.1)(character, advancement)
@@ -151,8 +177,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     @check.left_curly_bracket detected = {
         [ create lexling ]
         dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
-        dragon.pack.null()(location !tools.json.lexling.location)
-        dragon.pack(text, workspace:lexling.types:left_curly_bracket, location)(lexling !tools.json.lexling)
+        dragon.pack(text, workspace:lexling.types:left_curly_bracket, null_location)(lexling !tools.json.lexling)
 
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
@@ -170,8 +195,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     @check.right_curly_bracket detected = {
         [ create lexling ]
         dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
-        dragon.pack.null()(location !tools.json.lexling.location)
-        dragon.pack(text, workspace:lexling.types:right_curly_bracket, location)(lexling !tools.json.lexling)
+        dragon.pack(text, workspace:lexling.types:right_curly_bracket, null_location)(lexling !tools.json.lexling)
 
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
@@ -184,6 +208,58 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
+    [ detect string ]
+    dragon.integer.within_range(double_quote, character, double_quote, dragon.never)(detected)
+    @check.double_quote detected = {
+        [ setup lexling start ]
+        dragon.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting quote ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for double quote loop ]
+        @string.loop.start
+
+        [ check for end of characters ]
+        dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
+        @string.ran_out_of_characters ran_out_of_characters = {
+            [ setup error ]
+            dragon.set("Lexing Error: A string ran out of characters.")(message)
+            dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.json.error)
+
+            [ exit loop ]
+            dragon.jump(dragon.always, @lexing.loop.exit)()
+        }
+
+        [ check for ending quote ]
+        dragon.address_to_cell(workspace:current_character:progress, dragon.constant.1)(character, advancement)
+        dragon.integer.within_range(double_quote, character, double_quote, dragon.never)(detected)
+        @check.string.end_quote detected = {
+            [ setup lexling ]
+            dragon.copy(workspace:current_character:progress)(text.end)
+            dragon.pack(text.start, text.end)(text !dragon.buffer)
+            dragon.pack(text, workspace:lexling.types:string, null_location)(lexling !tools.json.lexling)
+
+            [ next character ]
+            dragon.copy(advancement)(workspace:current_character:progress)
+
+            [ print lexling ]
+            tools.json.lexling.print(lexling)()
+            dragon.print.new_line()()
+
+            [ jump to loop start ]
+            dragon.jump(dragon.always, @lexing.loop.start)()
+        }
+
+        [ not detected, go to loop start to check next character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+        dragon.jump(dragon.always, @string.loop.start)()
+    }
+
+    [ if nothing was matched, set error ]
+    dragon.set("Lexing Error: No lexling was matched.")(message)
+    dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.json.error)
+
     [ setup lexing loop end ]
-    @lexing.loop.end
+    @lexing.loop.exit
 }
