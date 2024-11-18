@@ -122,6 +122,7 @@ tools.json.lexling.print(lexling !tools.json.lexling)() = {
     string !dragon.cell,
     integer !dragon.cell,
     comma !dragon.cell,
+    colon !dragon.cell,
     end_of_file !dragon.cell
 )
 
@@ -136,7 +137,8 @@ tools.json.lexling.types.setup()(types !tools.json.lexling.types) = {
     dragon.set(dragon.integer.5)(types:string)
     dragon.set(dragon.integer.6)(types:integer)
     dragon.set(dragon.integer.7)(types:comma)
-    dragon.set(dragon.integer.8)(types:end_of_file)
+    dragon.set(dragon.integer.8)(types:colon)
+    dragon.set(dragon.integer.9)(types:end_of_file)
 }
 
 [ lex json ]
@@ -149,6 +151,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     dragon.set(dragon.hexadecimal.5B)(left_square_bracket)
     dragon.set(dragon.hexadecimal.5D)(right_square_bracket)
     dragon.set(dragon.hexadecimal.22)(double_quote)
+    dragon.set(dragon.hexadecimal.2C)(comma)
+    dragon.set(dragon.hexadecimal.3A)(colon)
     dragon.pack.null()(null_location !tools.text.location)
 
     [ setup loop start ]
@@ -196,6 +200,78 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ create lexling ]
         dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
         dragon.pack(text, workspace:lexling.types:right_curly_bracket, null_location)(lexling !tools.json.lexling)
+
+        [ next character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ print lexling ]
+        tools.json.lexling.print(lexling)()
+        dragon.print.new_line()()
+
+        [ jump to loop start ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
+    }
+
+    [ detect left_square_bracket ]
+    dragon.integer.within_range(left_square_bracket, character, left_square_bracket, dragon.never)(detected)
+    @check.left_square_bracket detected = {
+        [ create lexling ]
+        dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:left_square_bracket, null_location)(lexling !tools.json.lexling)
+
+        [ next character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ print lexling ]
+        tools.json.lexling.print(lexling)()
+        dragon.print.new_line()()
+
+        [ jump to loop start ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
+    }
+
+    [ detect right_square_bracket ]
+    dragon.integer.within_range(right_square_bracket, character, right_square_bracket, dragon.never)(detected)
+    @check.right_square_bracket detected = {
+        [ create lexling ]
+        dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:right_square_bracket, null_location)(lexling !tools.json.lexling)
+
+        [ next character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ print lexling ]
+        tools.json.lexling.print(lexling)()
+        dragon.print.new_line()()
+
+        [ jump to loop start ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
+    }
+    
+    [ detect comma ]
+    dragon.integer.within_range(comma, character, comma, dragon.never)(detected)
+    @check.comma detected = {
+        [ create lexling ]
+        dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:comma, null_location)(lexling !tools.json.lexling)
+
+        [ next character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ print lexling ]
+        tools.json.lexling.print(lexling)()
+        dragon.print.new_line()()
+
+        [ jump to loop start ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
+    }
+    
+    [ detect colon ]
+    dragon.integer.within_range(colon, character, colon, dragon.never)(detected)
+    @check.colon detected = {
+        [ create lexling ]
+        dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:colon, null_location)(lexling !tools.json.lexling)
 
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
@@ -262,4 +338,11 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
 
     [ setup lexing loop end ]
     @lexing.loop.exit
+
+    [ setup end of file lexling ]
+    dragon.set("[end_of_file]")(end_of_file_message)
+    dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
+    dragon.pack(end_of_file_message, workspace:lexling.types:end_of_file, null_location)(lexling !tools.json.lexling)
+    tools.json.lexling.print(lexling)()
+    dragon.print.new_line()()
 }

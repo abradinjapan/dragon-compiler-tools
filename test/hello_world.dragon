@@ -6,10 +6,29 @@ dragon.main()() = {
 
     [ test compiler ]
     [ compile ]
-    dragon.set("{{{}}}%22;[{}DSA{Dskjhnfa}%22;")(text)
+    dragon.set("{{{}}}%22;[{}DSA{Dskjhnfa}%22;[][,]")(text)
     tools.json.compile(text)(error)
 
     [ display message ]
     tools.json.error.print_if_occured(error)()
     dragon.print.new_line()()
+
+    [ get file data ]
+    dragon.set("./test/data/test_json.json")(file_path)
+    dragon.file_to_buffer(file_path)(file_text)
+
+    [ print raw text ]
+    dragon.print.buffer_as_string(file_text)()
+    dragon.print.new_line()()
+
+    [ compile ]
+    tools.json.compile(file_text)(error)
+    dragon.print.new_line()()
+
+    [ display message ]
+    tools.json.error.print_if_occured(error)()
+    dragon.print.new_line()()
+
+    [ clean up file ]
+    dragon.buffer.return(file_text)()
 }
