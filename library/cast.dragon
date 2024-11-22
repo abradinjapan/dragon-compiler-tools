@@ -1,0 +1,53 @@
+[ count how many digits in any number system ]
+tools.cast.calculate.digit_count(base !dragon.cell, value !dragon.cell)(count !dragon.cell) = {
+    [ check for zero value ]
+    dragon.integer.within_range(dragon.constant.0, value, dragon.constant.0, dragon.never)(is_zero_value)
+    @is_zero_value is_zero_value = {
+        [ if is zero value, then character count must be 1 to account for '0' string ]
+        dragon.set(dragon.integer.1)(count)
+
+        [ exit function ]
+        dragon.jump(dragon.always, @finished)()
+    }
+
+    [ check for zero denominator ]
+    dragon.integer.within_range(dragon.constant.0, base, dragon.constant.0, dragon.never)(is_zero_base)
+    @is_zero_base is_zero_base = {
+        [ if is zero base, then character count must be 0 to account for an invalid denominator ]
+        dragon.set(dragon.integer.0)(count)
+
+        [ exit function ]
+        dragon.jump(dragon.always, @finished)()
+    }
+
+    [ calculate count ]
+    [ null init count ]
+    dragon.set(dragon.integer.0)(count)
+
+    [ loop start ]
+    @loop_start
+
+    [ check if value is zero ]
+    dragon.integer.within_range(dragon.constant.0, value, dragon.constant.0, dragon.never)(is_zero_value)
+    dragon.jump(is_zero_value, @finished)()
+
+    [ calculate new amount ]
+    dragon.integer.divide(value, base)(value)
+
+    [ increment counter ]
+    dragon.integer.add(count, dragon.constant.1)(count)
+
+    [ jump to loop start ]
+    dragon.jump(dragon.always, @loop_start)()
+
+    [ setup exit ]
+    @finished
+}
+
+[ convert cell to hex string ]
+tools.cast.cell_to_hex_string(cell !dragon.cell)(string !dragon.buffer) = {
+    [ setup strings ]
+    dragon.set("0123456789ABCDEF")(hexits)
+
+    [  ]
+}

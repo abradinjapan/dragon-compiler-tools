@@ -1,18 +1,10 @@
 [ entry point ]
 dragon.main()() = {
     [ initialization message ]
-    dragon.set("The dragon slumbers...%0a;")(message)
+    dragon.set("The dragon slumbers in the highlands...%0a;")(message)
     dragon.print.buffer_as_string(message)()
 
     [ test compiler ]
-    [ compile ]
-    dragon.set("{{{}}}%22;[{}DSA{Dskjhnfa}%22;[][,]")(text)
-    tools.json.compile(text)(error)
-
-    [ display message ]
-    tools.json.error.print_if_occured(error)()
-    dragon.print.new_line()()
-
     [ get file data ]
     dragon.set("./test/data/test_json.json")(file_path)
     dragon.file_to_buffer(file_path)(file_text)
@@ -31,4 +23,38 @@ dragon.main()() = {
 
     [ clean up file ]
     dragon.buffer.return(file_text)()
+
+    [ test conversions ]
+    dragon.main.test.conversions()()
+}
+
+[ test conversions ]
+dragon.main.test.conversions()() = {
+    [ setup strings ]
+    dragon.set("Conversion Results: [ ")(header)
+    dragon.set(", ")(separator)
+    dragon.set(" ]")(footer)
+
+    [ setup bases ]
+    dragon.set(dragon.integer.2)(base_2)
+    dragon.set(dragon.integer.10)(base_10)
+    dragon.set(dragon.integer.16)(base_16)
+
+    [ setup value ]
+    dragon.set(dragon.integer.123)(value)
+
+    [ calculate results ]
+    tools.cast.calculate.digit_count(base_2, value)(base_2.count)
+    tools.cast.calculate.digit_count(base_10, value)(base_10.count)
+    tools.cast.calculate.digit_count(base_16, value)(base_16.count)
+
+    [ print results ]
+    dragon.print.buffer_as_string(header)()
+    dragon.print.debug_cell(base_2.count)()
+    dragon.print.buffer_as_string(separator)()
+    dragon.print.debug_cell(base_10.count)()
+    dragon.print.buffer_as_string(separator)()
+    dragon.print.debug_cell(base_16.count)()
+    dragon.print.buffer_as_string(footer)()
+    dragon.print.new_line()()
 }
