@@ -41,7 +41,7 @@ dragon.main.test.conversions()() = {
     dragon.set(dragon.integer.16)(base_16)
 
     [ setup value ]
-    dragon.set(dragon.integer.123)(value)
+    dragon.set(dragon.integer.123456)(value)
 
     [ calculate results ]
     tools.cast.calculate.digit_count(base_2, value)(base_2.count)
@@ -57,4 +57,14 @@ dragon.main.test.conversions()() = {
     dragon.print.debug_cell(base_16.count)()
     dragon.print.buffer_as_string(footer)()
     dragon.print.new_line()()
+
+    [ test cell to hex ]
+    tools.cast.cell_to_hex_string.lower_to_higher(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
+    tools.cast.cell_to_hex_string.higher_to_lower(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
 }

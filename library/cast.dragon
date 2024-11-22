@@ -44,10 +44,88 @@ tools.cast.calculate.digit_count(base !dragon.cell, value !dragon.cell)(count !d
     @finished
 }
 
-[ convert cell to hex string ]
-tools.cast.cell_to_hex_string(cell !dragon.cell)(string !dragon.buffer) = {
+[ convert cell to hex string in the lower to higher direction (normal reading is left to right -> higher_to_lower) ]
+tools.cast.cell_to_hex_string.lower_to_higher(value !dragon.cell)(string !dragon.buffer) = {
     [ setup strings ]
     dragon.set("0123456789ABCDEF")(hexits)
 
-    [  ]
+    [ calculate digit count ]
+    dragon.set(dragon.integer.16)(base)
+    tools.cast.calculate.digit_count(base, value)(digit_count)
+
+    [ allocate string ]
+    dragon.buffer.request(digit_count)(string)
+
+    [ setup current ]
+    dragon.pack(string, string:start)(current !dragon.current)
+
+    [ setup loop start ]
+    @loop_start
+
+    [ check for valid current ]
+    dragon.current.within_range(current, dragon.always)(exit)
+    dragon.jump(exit, @exit)()
+
+    [ get digit ]
+    dragon.integer.modulous(value, base)(remainder)
+    dragon.integer.add(hexits:start, remainder)(character_address)
+    dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
+
+    [ setup next digit ]
+    dragon.integer.divide(value, base)(value)
+
+    [ write digit ]
+    dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
+
+    [ advance current ]
+    dragon.integer.add(current:progress, dragon.constant.1)(current:progress)
+
+    [ jump to beginning for next character ]
+    dragon.jump(dragon.always, @loop_start)()
+
+    [ setup loop exit ]
+    @exit
+}
+
+[ convert cell to hex string in the higher to lower direction (normal reading is left to right -> higher_to_lower) ]
+tools.cast.cell_to_hex_string.higher_to_lower(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup strings ]
+    dragon.set("0123456789ABCDEF")(hexits)
+
+    [ calculate digit count ]
+    dragon.set(dragon.integer.16)(base)
+    tools.cast.calculate.digit_count(base, value)(digit_count)
+
+    [ allocate string ]
+    dragon.buffer.request(digit_count)(string)
+
+    [ setup current ]
+    dragon.pack(string, string:end)(current !dragon.current)
+
+    [ setup loop start ]
+    @loop_start
+
+    [ check for valid current ]
+    dragon.current.within_range(current, dragon.always)(exit)
+    dragon.jump(exit, @exit)()
+
+    [ get digit ]
+    dragon.integer.modulous(value, base)(remainder)
+    dragon.integer.add(hexits:start, remainder)(character_address)
+    dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
+
+    [ setup next digit ]
+    dragon.integer.divide(value, base)(value)
+
+    [ write digit ]
+    dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
+
+    [ advance current ]
+    dragon.integer.subtract(current:progress, dragon.constant.1)(current:progress)
+
+    [ jump to beginning for next character ]
+    dragon.jump(dragon.always, @loop_start)()
+
+    [ setup loop exit ]
+    @exit
 }
