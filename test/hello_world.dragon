@@ -26,6 +26,18 @@ dragon.main()() = {
 
     [ test conversions ]
     dragon.main.test.conversions()()
+
+    [ test error ]
+    dragon.main.test.error()()
+}
+
+[ test error ]
+dragon.main.test.error()() = {
+    [ open blank error ]
+    tools.error.setup_blank()(error)
+
+    [ print message ]
+    dragon.print.buffer_as_string(error:json)()
 }
 
 [ test conversions ]
