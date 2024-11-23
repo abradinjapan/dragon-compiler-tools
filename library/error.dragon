@@ -13,3 +13,12 @@ tools.error.setup_blank()(error !tools.error) = {
     [ setup blank json error ]
     dragon.set("%22;error%22;: {%0A;%09;%22;message%22;: %22;No error occured.%22;%0A;}%0A;")(error:json)
 }
+
+[ print if occured ]
+tools.error.print_if_occured(error !tools.error)() = {
+    [ check occurence ]
+    @print error:occured = {
+        [ print message ]
+        dragon.print.buffer_as_string(error:json)()
+    }
+}

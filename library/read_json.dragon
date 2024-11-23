@@ -15,41 +15,15 @@
     lexling.types !tools.json.lexling.types,
 
     [ error data ]
-    error !tools.json.error,
+    error !tools.error,
 
     [ lexing data ]
     current_character !dragon.current,
     lexlings !tools.json.lexlings
 )
 
-[ json compile error ]
-!tools.json.error
-(
-    occured !dragon.cell,
-    message !dragon.buffer,
-    location !tools.text.location
-)
-
-[ print error if error occured ]
-tools.json.error.print_if_occured(error !tools.json.error)() = {
-    @print error:occured = {
-        [ setup strings ]
-        dragon.set("{ ")(header)
-        dragon.set(", ")(separator)
-        dragon.set(" }")(footer)
-        dragon.set("%22;")(quote)
-
-        [ print data ]
-        dragon.print.buffer_as_string(header)()
-        dragon.print.buffer_as_string(quote)()
-        dragon.print.buffer_as_string(error:message)()
-        dragon.print.buffer_as_string(quote)()
-        dragon.print.buffer_as_string(footer)()
-    }
-}
-
 [ compile ]
-tools.json.compile(text !dragon.buffer)(error !tools.json.error) = {
+tools.json.compile(text !dragon.buffer)(error !tools.error) = {
     [ setup json ]
     dragon.pack.null()(json !tools.json)
 
@@ -328,7 +302,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         @string.ran_out_of_characters ran_out_of_characters = {
             [ setup error ]
             dragon.set("Lexing Error: A string ran out of characters.")(message)
-            dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.json.error)
+            dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.error)
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
@@ -362,7 +336,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
 
     [ if nothing was matched, set error ]
     dragon.set("Lexing Error: No lexling was matched.")(message)
-    dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.json.error)
+    dragon.pack(dragon.constant.1, message)(workspace:error !tools.error)
 
     [ setup lexing loop end ]
     @lexing.loop.exit

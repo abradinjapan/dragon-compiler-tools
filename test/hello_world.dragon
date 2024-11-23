@@ -18,7 +18,7 @@ dragon.main()() = {
     dragon.print.new_line()()
 
     [ display message ]
-    tools.json.error.print_if_occured(error)()
+    tools.error.print_if_occured(error)()
     dragon.print.new_line()()
 
     [ clean up file ]
