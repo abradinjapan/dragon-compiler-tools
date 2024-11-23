@@ -44,88 +44,99 @@ tools.cast.calculate.digit_count(base !dragon.cell, value !dragon.cell)(count !d
     @finished
 }
 
-[ convert cell to hex string in the lower to higher direction (normal reading is left to right -> higher_to_lower) ]
-tools.cast.cell_to_hex_string.lower_to_higher(value !dragon.cell)(string !dragon.buffer) = {
-    [ setup strings ]
-    dragon.set("0123456789ABCDEF")(hexits)
-
+[ convert a cell to a string of any type ]
+tools.cast.cell_to_text.lower_to_higher(value !dragon.cell, base !dragon.cell, digits !dragon.buffer, direction !dragon.cell[ false is lower to higher, true is higher to lower ])(string !dragon.buffer) = {
     [ calculate digit count ]
-    dragon.set(dragon.integer.16)(base)
     tools.cast.calculate.digit_count(base, value)(digit_count)
 
     [ allocate string ]
     dragon.buffer.request(digit_count)(string)
 
-    [ setup current ]
-    dragon.pack(string, string:start)(current !dragon.current)
+    [ invert direction ]
+    dragon.bits.xor(direction, dragon.constant.1)(alternate_direction)
 
-    [ setup loop start ]
-    @loop_start
+    [ if is lower to higher ]
+    @lower_to_higher alternate_direction = {
+        [ setup current ]
+        dragon.pack(string, string:start)(current !dragon.current)
 
-    [ check for valid current ]
-    dragon.current.within_range(current, dragon.always)(exit)
-    dragon.jump(exit, @exit)()
+        [ setup loop start ]
+        @lower_to_higher.loop_start
 
-    [ get digit ]
-    dragon.integer.modulous(value, base)(remainder)
-    dragon.integer.add(hexits:start, remainder)(character_address)
-    dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
+        [ check for valid current ]
+        dragon.current.within_range(current, dragon.always)(exit)
+        dragon.jump(exit, @exit)()
 
-    [ setup next digit ]
-    dragon.integer.divide(value, base)(value)
+        [ get digit ]
+        dragon.integer.modulous(value, base)(remainder)
+        dragon.integer.add(digits:start, remainder)(character_address)
+        dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
 
-    [ write digit ]
-    dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
+        [ setup next digit ]
+        dragon.integer.divide(value, base)(value)
 
-    [ advance current ]
-    dragon.integer.add(current:progress, dragon.constant.1)(current:progress)
+        [ write digit ]
+        dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
 
-    [ jump to beginning for next character ]
-    dragon.jump(dragon.always, @loop_start)()
+        [ advance current ]
+        dragon.integer.add(current:progress, dragon.constant.1)(current:progress)
+
+        [ jump to beginning for next character ]
+        dragon.jump(dragon.always, @lower_to_higher.loop_start)()
+    }
+
+    [ if is higher to lower ]
+    @higher_to_lower direction = {
+        [ setup current ]
+        dragon.pack(string, string:end)(current !dragon.current)
+
+        [ setup loop start ]
+        @higher_to_lower.loop_start
+
+        [ check for valid current ]
+        dragon.current.within_range(current, dragon.always)(exit)
+        dragon.jump(exit, @exit)()
+
+        [ get digit ]
+        dragon.integer.modulous(value, base)(remainder)
+        dragon.integer.add(digits:start, remainder)(character_address)
+        dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
+
+        [ setup next digit ]
+        dragon.integer.divide(value, base)(value)
+
+        [ write digit ]
+        dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
+
+        [ advance current ]
+        dragon.integer.subtract(current:progress, dragon.constant.1)(current:progress)
+
+        [ jump to beginning for next character ]
+        dragon.jump(dragon.always, @higher_to_lower.loop_start)()
+    }
 
     [ setup loop exit ]
     @exit
 }
 
-[ convert cell to hex string in the higher to lower direction (normal reading is left to right -> higher_to_lower) ]
-tools.cast.cell_to_hex_string.higher_to_lower(value !dragon.cell)(string !dragon.buffer) = {
-    [ setup strings ]
+[ cast a cell to hex string ]
+tools.cast.cell_to_hex_string.lower_to_higher(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
     dragon.set("0123456789ABCDEF")(hexits)
-
-    [ calculate digit count ]
     dragon.set(dragon.integer.16)(base)
-    tools.cast.calculate.digit_count(base, value)(digit_count)
+    dragon.set(dragon.boolean.false)(direction)
 
-    [ allocate string ]
-    dragon.buffer.request(digit_count)(string)
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, hexits, direction)(string)
+}
 
-    [ setup current ]
-    dragon.pack(string, string:end)(current !dragon.current)
+[ cast a cell to hex string ]
+tools.cast.cell_to_hex_string.higher_to_lower(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
+    dragon.set("0123456789ABCDEF")(hexits)
+    dragon.set(dragon.integer.16)(base)
+    dragon.set(dragon.boolean.true)(direction)
 
-    [ setup loop start ]
-    @loop_start
-
-    [ check for valid current ]
-    dragon.current.within_range(current, dragon.always)(exit)
-    dragon.jump(exit, @exit)()
-
-    [ get digit ]
-    dragon.integer.modulous(value, base)(remainder)
-    dragon.integer.add(hexits:start, remainder)(character_address)
-    dragon.address_to_cell(character_address, dragon.constant.1)(character, advancement)
-
-    [ setup next digit ]
-    dragon.integer.divide(value, base)(value)
-
-    [ write digit ]
-    dragon.cell_to_address(character, dragon.constant.1, current:progress)(advancement)
-
-    [ advance current ]
-    dragon.integer.subtract(current:progress, dragon.constant.1)(current:progress)
-
-    [ jump to beginning for next character ]
-    dragon.jump(dragon.always, @loop_start)()
-
-    [ setup loop exit ]
-    @exit
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, hexits, direction)(string)
 }
