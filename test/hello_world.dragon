@@ -58,6 +58,26 @@ dragon.main.test.conversions()() = {
     dragon.print.buffer_as_string(footer)()
     dragon.print.new_line()()
 
+    [ test cell to binary ]
+    tools.cast.cell_to_binary_string.lower_to_higher(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
+    tools.cast.cell_to_binary_string.higher_to_lower(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
+
+    [ test cell to decimal ]
+    tools.cast.cell_to_decimal_string.lower_to_higher(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
+    tools.cast.cell_to_decimal_string.higher_to_lower(value)(string)
+    dragon.print.buffer_as_string(string)()
+    dragon.print.new_line()()
+    dragon.buffer.return(string)()
+
     [ test cell to hex ]
     tools.cast.cell_to_hex_string.lower_to_higher(value)(string)
     dragon.print.buffer_as_string(string)()

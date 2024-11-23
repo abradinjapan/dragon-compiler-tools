@@ -10,8 +10,8 @@ tools.cast.calculate.digit_count(base !dragon.cell, value !dragon.cell)(count !d
         dragon.jump(dragon.always, @finished)()
     }
 
-    [ check for zero denominator ]
-    dragon.integer.within_range(dragon.constant.0, base, dragon.constant.0, dragon.never)(is_zero_base)
+    [ check for invalid denominator ]
+    dragon.integer.within_range(dragon.constant.0, base, dragon.constant.1, dragon.never)(is_zero_base)
     @is_zero_base is_zero_base = {
         [ if is zero base, then character count must be 0 to account for an invalid denominator ]
         dragon.set(dragon.integer.0)(count)
@@ -117,6 +117,50 @@ tools.cast.cell_to_text.lower_to_higher(value !dragon.cell, base !dragon.cell, d
 
     [ setup loop exit ]
     @exit
+}
+
+[ cast a cell to binary string ]
+tools.cast.cell_to_binary_string.lower_to_higher(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
+    dragon.set("01")(digits)
+    dragon.set(dragon.integer.2)(base)
+    dragon.set(dragon.boolean.false)(direction)
+
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, digits, direction)(string)
+}
+
+[ cast a cell to binary string ]
+tools.cast.cell_to_binary_string.higher_to_lower(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
+    dragon.set("01")(digits)
+    dragon.set(dragon.integer.2)(base)
+    dragon.set(dragon.boolean.true)(direction)
+
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, digits, direction)(string)
+}
+
+[ cast a cell to decimal string ]
+tools.cast.cell_to_decimal_string.lower_to_higher(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
+    dragon.set("0123456789")(digits)
+    dragon.set(dragon.integer.10)(base)
+    dragon.set(dragon.boolean.false)(direction)
+
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, digits, direction)(string)
+}
+
+[ cast a cell to decimal string ]
+tools.cast.cell_to_decimal_string.higher_to_lower(value !dragon.cell)(string !dragon.buffer) = {
+    [ setup data ]
+    dragon.set("0123456789")(digits)
+    dragon.set(dragon.integer.10)(base)
+    dragon.set(dragon.boolean.true)(direction)
+
+    [ cast ]
+    tools.cast.cell_to_text.lower_to_higher(value, base, digits, direction)(string)
 }
 
 [ cast a cell to hex string ]
