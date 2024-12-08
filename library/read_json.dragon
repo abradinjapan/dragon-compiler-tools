@@ -23,7 +23,7 @@
 )
 
 [ compile ]
-tools.json.compile(text !dragon.buffer)(error !tools.error) = {
+tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error) = {
     [ setup json ]
     dragon.pack.null()(json !tools.json)
 
@@ -34,6 +34,9 @@ tools.json.compile(text !dragon.buffer)(error !tools.error) = {
 
     [ lex ]
     tools.json.compile.lex(json, workspace)(json, workspace)
+    @verbose.lexlings verbose = {
+        tools.json.compile.lex.print(workspace)()
+    }
 
     [ exit compilation ]
     @compilation.exit
@@ -164,9 +167,9 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     dragon.jump(should_quit, @lexing.loop.exit)()
 
     [ get character ]
-    dragon.address_to_cell(workspace:current_character:progress, dragon.constant.1)(character, advancement)
+    dragon.address_to_cell(workspace:current_character:progress, dragon.ascii_character.byte_size)(character, advancement)
 
-    [ if whitespace, go back to beginning ]
+    [ if whitespace, go back to beginning of loop ]
     dragon.integer.within_range(whitespace:start, character, whitespace:end, dragon.never)(whitespace_detected)
     @whitespace whitespace_detected = {
         [ next character ]
@@ -194,7 +197,6 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
-    [
     [ detect right_curly_bracket ]
     dragon.integer.within_range(right_curly_bracket, character, right_curly_bracket, dragon.never)(detected)
     @check.right_curly_bracket detected = {
@@ -205,9 +207,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
 
-        [ print lexling ]
-        tools.json.lexling.print(lexling)()
-        dragon.print.new_line()()
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -223,9 +224,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
 
-        [ print lexling ]
-        tools.json.lexling.print(lexling)()
-        dragon.print.new_line()()
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -241,9 +241,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
 
-        [ print lexling ]
-        tools.json.lexling.print(lexling)()
-        dragon.print.new_line()()
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -259,9 +258,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
 
-        [ print lexling ]
-        tools.json.lexling.print(lexling)()
-        dragon.print.new_line()()
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -277,14 +275,14 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
 
-        [ print lexling ]
-        tools.json.lexling.print(lexling)()
-        dragon.print.new_line()()
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
+    [
     [ detect string ]
     dragon.integer.within_range(double_quote, character, double_quote, dragon.never)(detected)
     @check.double_quote detected = {
@@ -301,8 +299,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
         @string.ran_out_of_characters ran_out_of_characters = {
             [ setup error ]
-            dragon.set("Lexing Error: A string ran out of characters.")(message)
-            dragon.pack(dragon.constant.1, message, null_location)(workspace:error !tools.error)
+            dragon.set("Lexing Error: A string ran out of characters.")(json)
+            dragon.pack(dragon.constant.1, json)(workspace:error !tools.error)
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
@@ -336,14 +334,49 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
 
     [ if nothing was matched, set error ]
     dragon.set("Lexing Error: No lexling was matched.")(message)
-    dragon.pack(dragon.constant.1, message)(workspace:error !tools.error)
+    dragon.pack(dragon.true, message)(workspace:error !tools.error)
 
     [ setup lexing loop end ]
     @lexing.loop.exit
 
     [ setup end of file lexling ]
     dragon.set("[end_of_file]")(end_of_file_message)
-    dragon.pack(workspace:current_character:progress, workspace:current_character:progress)(text !dragon.buffer)
     dragon.pack(end_of_file_message, workspace:lexling.types:end_of_file, null_location)(lexling !tools.json.lexling)
     dragon.list.append.structure(workspace:lexlings:list, lexling)()
+}
+
+[ print lexling list ]
+tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
+    [ setup variables ]
+    dragon.pack.null()(lexling.dummy !tools.json.lexling)
+    dragon.structure.byte_size(lexling.dummy)(lexling.size)
+
+    [ setup current ]
+    dragon.list.calculate.content_buffer(workspace:lexlings:list)(content)
+    dragon.pack(content, content:start)(current !dragon.current)
+
+    [ setup loop start ]
+    @loop_start
+
+    [ check for end of current ]
+    dragon.current.within_range(current, dragon.always)(should_quit)
+    dragon.jump(should_quit, @loop_exit)()
+
+    [ get lexling ]
+    dragon.buffer.calculate.end_address(current:progress, lexling.size)(structure.end)
+    dragon.pack(current:progress, structure.end)(lexling_source !dragon.buffer)
+    dragon.buffer_to_structure(lexling_source)(lexling !tools.json.lexling)
+
+    [ next lexling ]
+    dragon.integer.add(current:progress, lexling.size)(current:progress)
+
+    [ print lexling ]
+    tools.json.lexling.print(lexling)()
+    dragon.print.new_line()()
+
+    [ jump to start of loop ]
+    dragon.jump(dragon.always, @loop_start)()
+
+    [ setup loop end ]
+    @loop_exit
 }
