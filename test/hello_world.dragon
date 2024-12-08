@@ -6,7 +6,7 @@ dragon.main()() = {
 
     [ test compiler ]
     [ get file data ]
-    dragon.set("./test/data/lexing_test.json")(file_path)
+    dragon.set("./test/data/test_json.json")(file_path)
     dragon.file_to_buffer(file_path)(file_text)
 
     [ print raw text ]

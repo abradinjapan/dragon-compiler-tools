@@ -282,7 +282,6 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
-    [
     [ detect string ]
     dragon.integer.within_range(double_quote, character, double_quote, dragon.never)(detected)
     @check.double_quote detected = {
@@ -299,15 +298,15 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
         @string.ran_out_of_characters ran_out_of_characters = {
             [ setup error ]
-            dragon.set("Lexing Error: A string ran out of characters.")(json)
-            dragon.pack(dragon.constant.1, json)(workspace:error !tools.error)
+            dragon.set("Lexing Error: A string ran out of characters.")(error_json)
+            dragon.pack(dragon.constant.1, error_json)(workspace:error !tools.error)
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
         }
 
         [ check for ending quote ]
-        dragon.address_to_cell(workspace:current_character:progress, dragon.constant.1)(character, advancement)
+        dragon.address_to_cell(workspace:current_character:progress, dragon.ascii_character.byte_size)(character, advancement)
         dragon.integer.within_range(double_quote, character, double_quote, dragon.never)(detected)
         @check.string.end_quote detected = {
             [ setup lexling ]
@@ -318,9 +317,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
             [ next character ]
             dragon.copy(advancement)(workspace:current_character:progress)
 
-            [ print lexling ]
-            tools.json.lexling.print(lexling)()
-            dragon.print.new_line()()
+            [ append lexling ]
+            dragon.list.append.structure(workspace:lexlings:list, lexling)()
 
             [ jump to loop start ]
             dragon.jump(dragon.always, @lexing.loop.start)()
@@ -330,7 +328,6 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
         dragon.jump(dragon.always, @string.loop.start)()
     }
-    ]
 
     [ if nothing was matched, set error ]
     dragon.set("Lexing Error: No lexling was matched.")(message)
