@@ -299,7 +299,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         @string.ran_out_of_characters ran_out_of_characters = {
             [ setup error ]
             dragon.set("Lexing Error: A string ran out of characters.")(error_json)
-            dragon.pack(dragon.constant.1, error_json)(workspace:error !tools.error)
+            dragon.pack(dragon.true, error_json)(workspace:error !tools.error)
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
