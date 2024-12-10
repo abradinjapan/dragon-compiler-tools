@@ -154,6 +154,8 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     dragon.set(dragon.hexadecimal.22)(double_quote)
     dragon.set(dragon.hexadecimal.2C)(comma)
     dragon.set(dragon.hexadecimal.3A)(colon)
+    dragon.set(dragon.hexadecimal.30)(decimal_digits.start)
+    dragon.set(dragon.hexadecimal.39)(decimal_digits.end)
     dragon.pack.null()(null_location !tools.text.location)
 
     [ open lexlings ]
@@ -327,6 +329,52 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         [ not detected, go to loop start to check next character ]
         dragon.copy(advancement)(workspace:current_character:progress)
         dragon.jump(dragon.always, @string.loop.start)()
+    }
+
+    [ detect integer ]
+    dragon.integer.within_range(decimal_digits.start, character, decimal_digits.end, dragon.never)(detected)
+    @check.decimal_digit detected = {
+        [ setup lexling start ]
+        dragon.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting digit ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for decimal digits loop ]
+        @decimal_digit.loop.start
+
+        [ check for end of characters ]
+        dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
+        @decimal_digit.ran_out_of_characters ran_out_of_characters = {
+            [ exit loop ]
+            dragon.jump(dragon.always, @lexing.decimal_digit.finished)()
+        }
+
+        [ check for next character ]
+        dragon.address_to_cell(workspace:current_character:progress, dragon.ascii_character.byte_size)(character, advancement)
+        dragon.integer.within_range(decimal_digits.start, character, decimal_digits.end, dragon.never)(detected)
+        @decimal_digits.next_character detected = {
+            [ next character ]
+            dragon.copy(advancement)(workspace:current_character:progress)
+
+            [ jump to loop start ]
+            dragon.jump(dragon.always, @decimal_digit.loop.start)()
+        }
+
+        [ no more characters detected ]
+        [ setup offset ]
+        @lexing.decimal_digit.finished
+
+        [ setup lexling ]
+        dragon.integer.subtract(workspace:current_character:progress, dragon.constant.1)(text.end)
+        dragon.pack(text.start, text.end)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:integer, null_location)(lexling !tools.json.lexling)
+
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+
+        [ jump to start of lexing loop ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
     [ if nothing was matched, set error ]
