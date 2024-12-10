@@ -378,7 +378,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     }
 
     [ if nothing was matched, set error ]
-    dragon.set("Lexing Error: No lexling was matched.")(message)
+    dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;:%22;No lexling was matched.%22;%0A;}%0A;")(message)
     dragon.pack(dragon.true, message)(workspace:error !tools.error)
 
     [ setup lexing loop end ]
