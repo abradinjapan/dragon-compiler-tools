@@ -324,8 +324,6 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
             [ setup error ]
             dragon.set("Lexing Error: A string ran out of characters.")(error_message)
             tools.json.compile.raise_error(workspace, error_message)(workspace)
-            [ dragon.set("Lexing Error: A string ran out of characters.")(error_json)
-            dragon.pack(dragon.true, error_json)(workspace:error !tools.error) ]
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
@@ -404,8 +402,6 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     [ if nothing was matched, set error ]
     dragon.set("Lexing Error: No lexling was matched.")(error_message)
     tools.json.compile.raise_error(workspace, error_message)(workspace)
-    [ dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;:%22;No lexling was matched.%22;%0A;}%0A;")(message)
-    dragon.pack(dragon.true, message)(workspace:error !tools.error) ]
 
     [ setup lexing loop end ]
     @lexing.loop.exit
