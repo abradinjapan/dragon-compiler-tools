@@ -5,7 +5,7 @@
 !tools.json
 (
     [ translated data ]
-    head_object !dragon.cell [ type TODO ]
+    nodes !dragon.cell [ type TODO ]
 )
 
 [ translation data ]
@@ -13,13 +13,18 @@
 (
     [ defines ]
     lexling.types !tools.json.lexling.types,
+    [ parsling.types !tools.json.parsling.types, ]
 
     [ error data ]
     error !tools.error,
 
     [ lexing data ]
     current_character !dragon.current,
-    lexlings !tools.json.lexlings
+    lexlings !tools.json.lexlings,
+
+    [ parsing data ]
+    current_lexling !dragon.current
+    [ parslings !tools.json.parslings ]
 )
 
 [ compile ]
@@ -43,6 +48,23 @@ tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error
 
     [ setup output ]
     dragon.copy(workspace:error)(error)
+}
+
+[ setup error for json reader ]
+tools.json.compile.raise_error(workspace !tools.json.workspace, message !dragon.buffer)(workspace !tools.json.workspace) = {
+    [ setup strings ]
+    dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;: %22;")(header)
+    dragon.set("%22;%0A;}%0A;")(footer)
+
+    [ open list ]
+    dragon.set(dragon.integer.1024)(increase)
+    dragon.copy(dragon.true)(workspace:error:occured)
+    dragon.list.open(increase)(workspace:error:json)
+
+    [ create error json ]
+    dragon.list.append.buffer(workspace:error:json, header)() [ append header ]
+    dragon.list.append.buffer(workspace:error:json, message)() [ append message ]
+    dragon.list.append.buffer(workspace:error:json, footer)() [ append footer ]
 }
 
 
@@ -300,8 +322,10 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
         @string.ran_out_of_characters ran_out_of_characters = {
             [ setup error ]
-            dragon.set("Lexing Error: A string ran out of characters.")(error_json)
-            dragon.pack(dragon.true, error_json)(workspace:error !tools.error)
+            dragon.set("Lexing Error: A string ran out of characters.")(error_message)
+            tools.json.compile.raise_error(workspace, error_message)(workspace)
+            [ dragon.set("Lexing Error: A string ran out of characters.")(error_json)
+            dragon.pack(dragon.true, error_json)(workspace:error !tools.error) ]
 
             [ exit loop ]
             dragon.jump(dragon.always, @lexing.loop.exit)()
@@ -378,8 +402,10 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     }
 
     [ if nothing was matched, set error ]
-    dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;:%22;No lexling was matched.%22;%0A;}%0A;")(message)
-    dragon.pack(dragon.true, message)(workspace:error !tools.error)
+    dragon.set("Lexing Error: No lexling was matched.")(error_message)
+    tools.json.compile.raise_error(workspace, error_message)(workspace)
+    [ dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;:%22;No lexling was matched.%22;%0A;}%0A;")(message)
+    dragon.pack(dragon.true, message)(workspace:error !tools.error) ]
 
     [ setup lexing loop end ]
     @lexing.loop.exit
@@ -425,3 +451,133 @@ tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
     [ setup loop end ]
     @loop_exit
 }
+
+
+[
+[
+    Parsing
+]
+[ parslings ]
+!tools.json.parslings
+(
+    list !dragon.list [ !tools.json.parsling ]
+)
+
+[ parsling ]
+!tools.json.parsling
+(
+    [ header ]
+    name !dragon.buffer,
+    type !dragon.cell,
+
+    [ data ]
+    value.integer !dragon.cell,
+    value.string !dragon.buffer,
+    value.structure !tools.json.parsling.index,
+    value.array !tools.json.parsling.index,
+
+    [ next parsling ]
+    next !tools.json.parsling.index
+)
+
+[ parsling index ]
+!tools.json.parsling.index
+(
+    index !dragon.cell
+)
+
+[ parsling types ]
+!tools.json.parsling.types
+(
+    object !dragon.cell, [ optionally named ]
+    array !dragon.cell, [ named ]
+    string !dragon.cell, [ named ]
+    integer !dragon.cell, [ named ]
+    boolean_false !dragon.cell, [ named ]
+    boolean_true !dragon.cell, [ named ]
+    null !dragon.cell [ named ]
+)
+
+[ setup parsling types ]
+tools.json.parsling.types.setup()(types !tools.json.parsling.types) = {
+    [ setup data ]
+    dragon.set(dragon.integer.0)(types:object)
+    dragon.set(dragon.integer.1)(types:array)
+    dragon.set(dragon.integer.2)(types:string)
+    dragon.set(dragon.integer.3)(types:integer)
+    dragon.set(dragon.integer.4)(types:boolean_false)
+    dragon.set(dragon.integer.5)(types:boolean_true)
+    dragon.set(dragon.integer.6)(types:null)
+}
+
+[ parse json lexlings ]
+tools.json.compile.parse(workspace !tools.json.workspace)(workspace !tools.json.workspace) = {
+    [ open parslings ]
+    dragon.pack.null()(empty_parsling !tools.json.parsling)
+    dragon.structure.byte_size(empty_parsling)(json_parsling.size)
+    dragon.integer.multiply(json_parsling.size, dragon.constant.64)(increase)
+    dragon.list.open(increase)(workspace:parslings:list)
+
+    [ setup current ]
+    dragon.list.calculate.content_buffer(workspace:lexlings:list)(lexlings_buffer)
+    dragon.pack(lexlings_buffer, lexlings_buffer:start)(workspace:current_lexling !dragon.current)
+
+    [ parse root object ]
+    tools.json.compile.parse.object(workspace)(workspace, id)
+}
+
+[ parse object ]
+tools.json.compile.parse.object(workspace !tools.json.workspace)(workspace !tools.json.workspace, id !tools.json.parsling.index) = {
+    [ parse contents ]
+    [ check for opener ]
+    tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_curly_bracket, dragon.true)(valid)
+    dragon.integer.xor(valid, dragon.constant.1)(invalid)
+    @missing_opener invalid = {
+        [ setup error ]
+        dragon.set("")(message)
+        dragon.pack(dragon.true, message)(workspace:error !tools.error)
+    }
+}
+
+[ parse header ]
+tools.json.compile.parse.header(workspace !tools.json.workspace)(workspace !tools.json.workspace) = {
+    
+}
+
+[ check lexling ]
+tools.json.compile.parse.check_current_lexling.by_type(workspace !tools.json.workspace, expected_type !dragon.cell, advance !dragon.cell)(validity !dragon.cell) = {
+    [ check for valid lexling range ]
+    dragon.current.within_range(workspace:current_lexling, dragon.true)(out_of_range)
+    @out_of_range out_of_range = {
+        [ set validity ]
+        dragon.copy(dragon.false)(validity)
+
+        [ exit function ]
+        dragon.jump(dragon.always, @exit)()
+    }
+
+    [ setup lexling read buffer ]
+    dragon.pack.null()(dummy !tools.json.lexling)
+    dragon.structure.byte_size(dummy)(lexling.byte_size)
+    dragon.buffer.calculate.end_address(workspace:current_lexling:progress, lexling.byte_size)(lexling.end)
+    dragon.pack(workspace:current_lexling:progress, lexling.end)(lexling.source !dragon.buffer)
+
+    [ get lexling ]
+    dragon.buffer_to_structure(lexling.source)(lexling !tools.json.lexling)
+
+    [ check for lexling type ]
+    dragon.integer.within_range(expected_type, lexling:type, expected_type, dragon.always)(invalid)
+    @invalid invalid = {
+        [ set validity ]
+        dragon.copy(dragon.false)(validity)
+
+        [ exit function ]
+        dragon.jump(dragon.true, @exit)()
+    }
+
+    [ set validity ]
+    dragon.copy(dragon.true)(validity)
+
+    [ exit function ]
+    @exit
+} ]

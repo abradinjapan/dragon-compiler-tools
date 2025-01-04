@@ -2,7 +2,7 @@
 !tools.error
 (
     occured !dragon.cell,
-    json !dragon.buffer
+    json !dragon.list
 )
 
 [ setup blank error ]
@@ -10,8 +10,15 @@ tools.error.setup_blank()(error !tools.error) = {
     [ not occured ]
     dragon.set(dragon.boolean.false)(error:occured)
     
-    [ setup blank json error ]
-    dragon.set("%22;error%22;: {%0A;%09;%22;occured%22;: false,%0A;%09;%22;message%22;: %22;No error occured.%22;%0A;}%0A;")(error:json)
+    [ setup json message ]
+    dragon.set("%22;error%22;: {%0A;%09;%22;occured%22;: false,%0A;%09;%22;message%22;: %22;No error occured.%22;%0A;}%0A;")(message)
+
+    [ open list ]
+    dragon.buffer.calculate.length(message)(increase)
+    dragon.list.open(increase)(error:json)
+
+    [ append message ]
+    dragon.list.append.buffer(error:json, message)()
 }
 
 [ print if occured ]
@@ -19,6 +26,7 @@ tools.error.print_if_occured(error !tools.error)() = {
     [ check occurence ]
     @print error:occured = {
         [ print message ]
-        dragon.print.buffer_as_string(error:json)()
+        dragon.list.calculate.content_buffer(error:json)(message)
+        dragon.print.buffer_as_string(message)()
     }
 }
