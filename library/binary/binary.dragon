@@ -1,0 +1,84 @@
+[
+    Binary:
+    A set of functions that enable two pass code generation.
+]
+
+[
+    Workspace
+]
+
+[ create a workspace ]
+!tools.binary.workspace
+(
+    do_write !dragon.cell,
+    write_to !dragon.cell,
+    length !dragon.cell,
+    program !dragon.buffer
+)
+
+[ open a workspace ]
+tools.binary.workspace.open()(workspace !tools.binary.workspace) = {
+    dragon.pack.null()(workspace !tools.binary.workspace)
+}
+
+[ advance workspace ]
+tools.binary.workspace.setup_pass(workspace !tools.binary.workspace, do_write !dragon.cell)(workspace !tools.binary.workspace) = {
+    [ setup do_write ]
+    dragon.copy(do_write)(workspace:do_write)
+
+    [ determine pass type ]
+    dragon.integer.within_range(dragon.false, workspace:do_write, dragon.false, dragon.never)(measure_pass)
+    dragon.integer.within_range(dragon.true, workspace:do_write, dragon.true, dragon.never)(write_pass)
+
+    [ if is starting a measure pass ]
+    @measure_pass measure_pass = {
+        [ setup length ]
+        dragon.copy(dragon.constant.0)(workspace:length)
+    }
+
+    [ if is starting a write pass ]
+    @write_pass write_pass = {
+        [ allocate buffer based on length ]
+        dragon.buffer.request(workspace:length)(workspace:program)
+
+        [ setup write to ]
+        dragon.copy(workspace:program:start)(workspace:write_to)
+
+        [ reset length ]
+        dragon.copy(dragon.constant.0)(workspace:length)
+    }
+}
+
+[ write data to workspace ]
+tools.binary.workspace.write.bytes(workspace !tools.binary.workspace, data !dragon.cell, count !dragon.cell)(workspace !tools.binary.workspace) = {
+    [ if is write pass, do write and advancement ]
+    @do_write workspace:do_write = {
+        [ write data & advance ]
+        dragon.cell_to_address(data, count, workspace:write_to)(workspace:write_to)
+    }
+
+    [ advance length ]
+    dragon.integer.add(workspace:length, count)(workspace:length)
+}
+
+[ write buffer to workspace ]
+tools.binary.workspace.write.buffer(workspace !tools.binary.workspace, data !dragon.buffer)(workspace !tools.binary.workspace) = {
+    [ calculate buffer length ]
+    dragon.buffer.calculate.length(data)(data.length)
+
+    [ if is write pass, do write and advancement ]
+    @do_write workspace:do_write = {
+        [ calculate destination buffer ]
+        dragon.buffer.calculate.end_address(workspace:write_to, data.length)(destination.end)
+        dragon.pack(workspace:write_to, destination.end)(destination !dragon.buffer)
+
+        [ write data ]
+        dragon.buffer.copy.low_to_high(data, destination)()
+
+        [ advance current ]
+        dragon.integer.add(workspace:write_to, data.length)(workspace:write_to)
+    }
+
+    [ advance length ]
+    dragon.integer.add(workspace:length, data.length)(workspace:length)
+}

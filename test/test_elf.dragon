@@ -1,0 +1,25 @@
+[ test main ]
+dragon.main()() = {
+    [ open settings ]
+    tools.elf.header.settings.setup_linux_x64.executable(dragon.constant.0, dragon.constant.0, dragon.constant.0, dragon.constant.0, dragon.constant.0, dragon.constant.0)(settings)
+
+    [ setup first pass ]
+    tools.binary.workspace.open()(workspace)
+    tools.binary.workspace.setup_pass(workspace, dragon.false)(workspace)
+
+    [ do first pass ]
+    tools.elf.write.elf_header(workspace, settings)(workspace)
+
+    [ setup second pass ]
+    tools.binary.workspace.setup_pass(workspace, dragon.true)(workspace)
+
+    [ do second pass ]
+    tools.elf.write.elf_header(workspace, settings)(workspace)
+
+    [ write buffer to file ]
+    dragon.set("../elf.elf")(file_path)
+    dragon.buffer_to_file(workspace:program, file_path)()
+
+    [ deallocate buffer ]
+    dragon.buffer.return(workspace:program)()
+}

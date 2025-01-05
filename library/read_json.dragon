@@ -576,7 +576,7 @@ tools.json.compile.parse.object(workspace !tools.json.workspace)(workspace !tool
     }
 
     [ detect type ]
-
+    
 
     [ jump back to loop start ]
     dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -661,7 +661,8 @@ tools.json.compile.parse.check_current_lexling.by_name(workspace !tools.json.wor
     }
 
     [ check for lexling name ]
-
+    tools.check.buffer_contents_are_equal(lexling:raw, expected_name)(valid)
+    dragon.bits.xor(valid, dragon.constant.1)(invalid)
     @invalid_name invalid = {
         [ set validity ]
         dragon.copy(dragon.false)(validity)

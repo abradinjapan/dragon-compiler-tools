@@ -1,0 +1,117 @@
+[
+    About:
+    elf.dragon is a library dedicated to generating elf headers and other information.
+]
+
+[
+    Elf Header
+]
+
+[ settings ]
+!tools.elf.header.settings
+(
+    architecture_width !dragon.cell, [ 32 bit or 64 bit ]
+    endianess !dragon.cell,
+    os_abi !dragon.cell,
+    elf_file_type !dragon.cell,
+    machine !dragon.cell,
+    entry_point_address !dragon.cell,
+    program_header_table_offset !dragon.cell,
+    section_header_table_offset !dragon.cell,
+    program_header_table_entry_count !dragon.cell,
+    section_header_table_entry_count !dragon.cell,
+    section_header_table_string_table_index !dragon.cell
+)
+
+[ setup an elf header settings for linux x64 (64-bit) ]
+tools.elf.header.settings.setup_linux_x64.executable(entry_point_address !dragon.cell, program_header_table_offset !dragon.cell, section_header_table_offset !dragon.cell, program_header_table_entry_count !dragon.cell, section_header_table_entry_count !dragon.cell, section_header_table_string_table_index !dragon.cell)(settings !tools.elf.header.settings) = {
+    [ apply settings ]
+    dragon.set(dragon.integer.2)(settings:architecture_width) [ 2 -> 64bit ]
+    dragon.set(dragon.integer.1)(settings:endianess) [ 1 -> two's compliment, little endian ]
+    dragon.set(dragon.integer.3)(settings:os_abi) [ linux ]
+    dragon.set(dragon.integer.2)(settings:elf_file_type) [ ET_EXEC ]
+    dragon.set(dragon.integer.62)(settings:machine) [ EM_X86_64 ]
+    dragon.copy(program_header_table_offset)(settings:program_header_table_offset)
+    dragon.copy(section_header_table_offset)(settings:section_header_table_offset)
+    dragon.copy(program_header_table_entry_count)(settings:program_header_table_entry_count)
+    dragon.copy(section_header_table_entry_count)(settings:section_header_table_entry_count)
+    dragon.copy(section_header_table_string_table_index)(settings:section_header_table_string_table_index)
+}
+
+[ write an elf header ]
+tools.elf.write.elf_header(workspace !tools.binary.workspace, settings !tools.elf.header.settings)(workspace !tools.binary.workspace) = {
+    [ setup constants ]
+    dragon.set("%7f;ELF")(magic_number)
+
+    [ determine architecture width ]
+    dragon.integer.within_range(dragon.constant.1, settings:architecture_width, dragon.constant.1, dragon.never)(is_32_bit)
+    dragon.integer.within_range(dragon.constant.2, settings:architecture_width, dragon.constant.2, dragon.never)(is_64_bit)
+
+    [ for 64 bit headers ]
+    @64 is_64_bit = {
+        [ elf header identifier ]
+        @e_ident dragon.always = {
+            [ write e_ident magic number ]
+            tools.binary.workspace.write.buffer(workspace, magic_number)(workspace)
+
+            [ write e_ident class ]
+            tools.binary.workspace.write.bytes(workspace, settings:architecture_width, dragon.constant.1)(workspace)
+
+            [ write e_ident endianess ]
+            tools.binary.workspace.write.bytes(workspace, settings:endianess, dragon.constant.1)(workspace)
+
+            [ write e_ident elf header version ]
+            tools.binary.workspace.write.bytes(workspace, dragon.constant.1, dragon.constant.1)(workspace)
+
+            [ write e_ident elf os_abi ]
+            tools.binary.workspace.write.bytes(workspace, settings:os_abi, dragon.constant.1)(workspace)
+
+            [ write e_ident abi version ]
+            tools.binary.workspace.write.bytes(workspace, dragon.constant.0, dragon.constant.1)(workspace)
+
+            [ write e_ident padding ]
+            tools.binary.workspace.write.bytes(workspace, dragon.constant.0, dragon.constant.7)(workspace)
+        }
+
+        [ write e_type ]
+        tools.binary.workspace.write.bytes(workspace, settings:elf_file_type, dragon.constant.2)(workspace)
+
+        [ write e_machine ]
+        tools.binary.workspace.write.bytes(workspace, settings:machine, dragon.constant.2)(workspace)
+
+        [ write e_version ]
+        tools.binary.workspace.write.bytes(workspace, dragon.constant.1, dragon.constant.4)(workspace)
+
+        [ write e_entry ]
+        tools.binary.workspace.write.bytes(workspace, settings:entry_point_address, dragon.constant.8)(workspace)
+
+        [ write e_phoff ]
+        tools.binary.workspace.write.bytes(workspace, settings:program_header_table_offset, dragon.constant.8)(workspace)
+
+        [ write e_shoff ]
+        tools.binary.workspace.write.bytes(workspace, settings:section_header_table_offset, dragon.constant.8)(workspace)
+
+        [ write e_flags ]
+        tools.binary.workspace.write.bytes(workspace, dragon.constant.0, dragon.constant.4)(workspace)
+
+        [ write e_ehsize ]
+        tools.binary.workspace.write.bytes(workspace, dragon.constant.64, dragon.constant.2)(workspace)
+
+        [ write e_phentsize ]
+        dragon.set(dragon.integer.56)(program_header_table_entry_size)
+        tools.binary.workspace.write.bytes(workspace, program_header_table_entry_size, dragon.constant.2)(workspace)
+
+        [ write e_phnum ]
+        tools.binary.workspace.write.bytes(workspace, settings:program_header_table_entry_count, dragon.constant.2)(workspace)
+
+        [ write e_shentsize ]
+        dragon.set(dragon.integer.64)(section_header_table_entry_size)
+        tools.binary.workspace.write.bytes(workspace, section_header_table_entry_size, dragon.constant.2)(workspace)
+
+        [ write e_shnum ]
+        tools.binary.workspace.write.bytes(workspace, settings:section_header_table_entry_count, dragon.constant.2)(workspace)
+
+        [ write e_shstrndx ]
+        tools.binary.workspace.write.bytes(workspace, settings:section_header_table_string_table_index, dragon.constant.2)(workspace)
+    }
+}
