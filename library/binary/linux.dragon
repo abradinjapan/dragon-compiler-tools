@@ -1,0 +1,12 @@
+[
+    About:
+    linux.elf is a library for generating linux based executable files.
+    Currently only supporting some features of x86_64.
+]
+
+[
+    Write Syscalls
+]
+
+[ write exit syscall ]
+tools.linux

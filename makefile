@@ -1,3 +1,6 @@
+test_everything:
+	../dragon.elf ./test/test_all.dragon
+
 release:
 	../dragon.elf ./test/hello_world.dragon ./library/read_json.dragon ./library/cast.dragon ./library/error.dragon ./library/check.dragon
 

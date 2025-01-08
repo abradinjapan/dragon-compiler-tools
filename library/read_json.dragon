@@ -59,7 +59,7 @@ tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error
 [ setup error for json reader ]
 tools.json.compile.raise_error(workspace !tools.json.workspace, message !dragon.buffer)(workspace !tools.json.workspace) = {
     [ setup strings ]
-    dragon.set("%22;error%22;: %22;{%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;: %22;")(header)
+    dragon.set("%22;error%22;: {%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;: %22;")(header)
     dragon.set("%22;%0A;}%0A;")(footer)
 
     [ open list ]

@@ -1,0 +1,91 @@
+[ main ]
+dragon.main()() = {
+    [ setup file paths ]
+    dragon.set("./test/hello_world.dragon")(file_path.hello_world)
+    dragon.set("./library/read_json.dragon")(file_path.read_json)
+    dragon.set("./library/cast.dragon")(file_path.cast)
+    dragon.set("./library/error.dragon")(file_path.error)
+    dragon.set("./library/check.dragon")(file_path.check)
+    dragon.set("./test/test_elf.dragon")(file_path.test_elf)
+    dragon.set("./library/binary/binary.dragon")(file_path.binary.binary)
+    dragon.set("./library/binary/elf.dragon")(file_path.binary.elf)
+
+    [ load files ]
+    dragon.file_to_buffer(file_path.hello_world)(file.hello_world)
+    dragon.file_to_buffer(file_path.read_json)(file.read_json)
+    dragon.file_to_buffer(file_path.cast)(file.cast)
+    dragon.file_to_buffer(file_path.error)(file.error)
+    dragon.file_to_buffer(file_path.check)(file.check)
+    dragon.file_to_buffer(file_path.test_elf)(file.test_elf)
+    dragon.file_to_buffer(file_path.binary.binary)(file.binary.binary)
+    dragon.file_to_buffer(file_path.binary.elf)(file.binary.elf)
+
+    [ setup lists ]
+    dragon.structure.byte_size(file.hello_world)(buffer_structure.byte_size)
+    dragon.list.open(buffer_structure.byte_size)(test.json)
+    dragon.list.open(buffer_structure.byte_size)(test.elf)
+
+    [ enlist files into json test ]
+    dragon.list.append.structure(test.json, file.hello_world)()
+    dragon.list.append.structure(test.json, file.read_json)()
+    dragon.list.append.structure(test.json, file.cast)()
+    dragon.list.append.structure(test.json, file.error)()
+    dragon.list.append.structure(test.json, file.check)()
+
+    [ enlist files into elf test ]
+    dragon.list.append.structure(test.elf, file.test_elf)()
+    dragon.list.append.structure(test.elf, file.binary.binary)()
+    dragon.list.append.structure(test.elf, file.binary.elf)()
+
+    [ just run tests ]
+    main.just_run(test.json)()
+    main.just_run(test.elf)()
+
+    [ clean up ]
+    [ return files ]
+    dragon.buffer.return(file.hello_world)()
+    dragon.buffer.return(file.read_json)()
+    dragon.buffer.return(file.cast)()
+    dragon.buffer.return(file.error)()
+    dragon.buffer.return(file.check)()
+    dragon.buffer.return(file.test_elf)()
+    dragon.buffer.return(file.binary.binary)()
+    dragon.buffer.return(file.binary.elf)()
+
+    [ return lists ]
+    dragon.list.close(test.json)()
+    dragon.list.close(test.elf)()
+}
+
+[ compile, install and run program ]
+main.just_run(sources !dragon.list)() = {
+    [ get buffer of buffers ]
+    dragon.list.calculate.content_buffer(sources)(sources.buffer)
+
+    [ compile ]
+    dragon.compiler.compile(sources.buffer, dragon.false, dragon.true)(byte_code, debug_information, error.occured, error.message, error.location.file_index, error.location.line_number, error.location.character_index)
+
+    [ check for compilation error ]
+    @print_compilation_error error.occured = {
+        dragon.print.buffer_as_string(error.message)()
+        dragon.print.new_line()()
+        dragon.jump(dragon.always, @exit)()
+    }
+
+    [ open new context & install ]
+    dragon.context.open()(context)
+    dragon.context.install_program(context, byte_code)()
+
+    [ run context ]
+    dragon.set(dragon.integer.n1)(instruction_count)
+    dragon.context.run(context, instruction_count)()
+
+    [ clean up context ]
+    dragon.buffer.return(context)()
+
+    [ clean up program ]
+    dragon.buffer.return(byte_code)()
+
+    [ exit ]
+    @exit
+}

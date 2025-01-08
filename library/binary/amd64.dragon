@@ -1,0 +1,13 @@
+[
+    About:
+    amd64.dragon is a library for two pass generating x86_64 / amd64 code.
+]
+
+[
+    Instructions
+]
+
+[ write a mov instruction ]
+tools.amd64.write.instruction.mov()() = {
+    
+}
