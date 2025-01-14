@@ -79,6 +79,12 @@ main.just_run(sources !dragon.list, test_name !dragon.buffer)() = {
     @print_compilation_error error.occured = {
         dragon.print.buffer_as_string(error.message)()
         dragon.print.new_line()()
+        dragon.print.debug_cell(error.location.file_index)()
+        dragon.print.new_line()()
+        dragon.print.debug_cell(error.location.line_number)()
+        dragon.print.new_line()()
+        dragon.print.debug_cell(error.location.character_index)()
+        dragon.print.new_line()()
         dragon.jump(dragon.always, @exit)()
     }
 
