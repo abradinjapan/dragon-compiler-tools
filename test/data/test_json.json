@@ -1,4 +1,5 @@
 {
     "data": "Roaring dragons sometimes slumber...",
-    "oof": 100
+    "oof": 100,
+    "foo": "bar"
 }
