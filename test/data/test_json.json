@@ -8,7 +8,9 @@
         "ofof": 100,
         "Hello": "hi",
         "thing": {
-            "doer": true
+            "doer": true,
+            "doerdoer": false,
+            "thingdoer": null
         }
     },
     "empty": {

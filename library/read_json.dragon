@@ -766,7 +766,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
 
     [ invalid value lexling ]
     [ raise error ]
-    dragon.set("Parsing Error: When breaking down a json object, an unusable lexling type was found.")(error_message)
+    dragon.set("Parsing Error: When breaking down a json object, an unusable lexling was found.")(error_message)
     tools.json.compile.raise_error(workspace, error_message)(workspace)
 
     [ exit function ]
