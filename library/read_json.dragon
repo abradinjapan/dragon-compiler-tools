@@ -152,6 +152,7 @@ tools.json.lexling.print(lexling !tools.json.lexling)() = {
     integer !dragon.cell,
     comma !dragon.cell,
     colon !dragon.cell,
+    name !dragon.cell,
     end_of_file !dragon.cell
 )
 
@@ -167,7 +168,8 @@ tools.json.lexling.types.setup()(types !tools.json.lexling.types) = {
     dragon.set(dragon.integer.6)(types:integer)
     dragon.set(dragon.integer.7)(types:comma)
     dragon.set(dragon.integer.8)(types:colon)
-    dragon.set(dragon.integer.9)(types:end_of_file)
+    dragon.set(dragon.integer.9)(types:name)
+    dragon.set(dragon.integer.10)(types:end_of_file)
 }
 
 [ lex json ]
@@ -405,6 +407,54 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.jump(dragon.always, @lexing.loop.start)()
     }
 
+    [ detect name ]
+    tools.json.compile.lex.check_for_name_character(character)(detected)
+    @check.name detected = {
+        [ setup lexling start ]
+        dragon.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting character ]
+        dragon.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for characters loop ]
+        @name.loop.start
+
+        [ check for end of characters ]
+        dragon.current.within_range(workspace:current_character, dragon.always)(ran_out_of_characters)
+        @name.ran_out_of_characters ran_out_of_characters = {
+            [ exit loop ]
+            dragon.jump(dragon.always, @lexing.name.finished)()
+        }
+
+        [ check for next character ]
+        dragon.address_to_cell(workspace:current_character:progress, dragon.ascii_character.byte_size)(character, advancement)
+        tools.json.compile.lex.check_for_name_character(character)(detected)
+        @name.next_character detected = {
+            [ next character ]
+            dragon.copy(advancement)(workspace:current_character:progress)
+
+            [ jump to loop start ]
+            dragon.jump(dragon.always, @name.loop.start)()
+        }
+
+        [ @oof detected = {} ]
+
+        [ no more characters detected ]
+        [ setup offset ]
+        @lexing.name.finished
+
+        [ setup lexling ]
+        dragon.integer.subtract(workspace:current_character:progress, dragon.constant.1)(text.end)
+        dragon.pack(text.start, text.end)(text !dragon.buffer)
+        dragon.pack(text, workspace:lexling.types:name, null_location)(lexling !tools.json.lexling)
+
+        [ append lexling ]
+        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+
+        [ jump to start of lexing loop ]
+        dragon.jump(dragon.always, @lexing.loop.start)()
+    }
+
     [ if nothing was matched, set error ]
     dragon.set("Lexing Error: No lexling was matched.")(error_message)
     tools.json.compile.raise_error(workspace, error_message)(workspace)
@@ -416,6 +466,41 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     dragon.set("[end_of_file]")(end_of_file_message)
     dragon.pack(end_of_file_message, workspace:lexling.types:end_of_file, null_location)(lexling !tools.json.lexling)
     dragon.list.append.structure(workspace:lexlings:list, lexling)()
+}
+
+[ detect and get name character ]
+tools.json.compile.lex.check_for_name_character(character !dragon.cell)(valid !dragon.cell) = {
+    [ setup name ranges ]
+    dragon.set(dragon.hexadecimal.41)(uppercase_start)
+    dragon.set(dragon.hexadecimal.5A)(uppercase_end)
+    dragon.set(dragon.hexadecimal.61)(lowercase_start)
+    dragon.set(dragon.hexadecimal.7A)(lowercase_end)
+    dragon.set(dragon.hexadecimal.30)(numbers_start)
+    dragon.set(dragon.hexadecimal.39)(numbers_end)
+    dragon.set(dragon.hexadecimal.5F)(underscore)
+
+    [ check ranges ]
+    [ check uppercase ]
+    dragon.integer.within_range(uppercase_start, character, uppercase_end, dragon.never)(valid)
+    dragon.jump(valid, @exit)()
+
+    [ check lowercase ]
+    dragon.integer.within_range(lowercase_start, character, lowercase_end, dragon.never)(valid)
+    dragon.jump(valid, @exit)()
+
+    [ check numbers ]
+    dragon.integer.within_range(numbers_start, character, numbers_end, dragon.never)(valid)
+    dragon.jump(valid, @exit)()
+
+    [ check underscore ]
+    dragon.integer.within_range(underscore, character, underscore, dragon.never)(valid)
+    dragon.jump(valid, @exit)()
+
+    [ not found ]
+    dragon.copy(dragon.false)(valid)
+
+    [ exit ]
+    @exit
 }
 
 [ print lexling list ]
@@ -474,12 +559,6 @@ tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
     value.members !dragon.list [ !tools.json.parsling ]
 )
 
-[ parsling index ]
-!tools.json.parsling.index
-(
-    index !dragon.cell
-)
-
 [ parsling types ]
 !tools.json.parsling.types
 (
@@ -519,6 +598,11 @@ tools.json.compile.parse(workspace !tools.json.workspace)(workspace !tools.json.
 
 [ parse object ]
 tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace !tools.json.workspace, parsling !tools.json.parsling) = {
+    [ setup strings ]
+    dragon.set("true")(string.true)
+    dragon.set("false")(string.false)
+    dragon.set("null")(string.null)
+
     [ setup type ]
     dragon.copy(workspace:parsling.types:object)(parsling:type)
 
@@ -618,6 +702,9 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect number ]
     tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:integer, dragon.true)(workspace, recent_lexling, valid)
     @found_new_number valid = {
+        [ setup type ]
+        dragon.copy(workspace:parsling.types:integer)(parsling:type)
+
         [ setup number ]
         dragon.copy(recent_lexling)(parsling:value.datum)
 
@@ -628,7 +715,49 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect string ]
     tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, dragon.true)(workspace, recent_lexling, valid)
     @found_new_string valid = {
+        [ setup type ]
+        dragon.copy(workspace:parsling.types:string)(parsling:type)
+
         [ setup string ]
+        dragon.copy(recent_lexling)(parsling:value.datum)
+
+        [ next iteration ]
+        dragon.jump(dragon.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean true ]
+    tools.json.compile.parse.check_current_lexling.by_value(workspace, string.true, dragon.true)(workspace, recent_lexling, valid)
+    @found_new_boolean_true valid = {
+        [ setup type ]
+        dragon.copy(workspace:parsling.types:boolean_true)(parsling:type)
+
+        [ setup data ]
+        dragon.copy(recent_lexling)(parsling:value.datum)
+
+        [ next iteration ]
+        dragon.jump(dragon.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean false ]
+    tools.json.compile.parse.check_current_lexling.by_value(workspace, string.false, dragon.true)(workspace, recent_lexling, valid)
+    @found_new_boolean_false valid = {
+        [ setup type ]
+        dragon.copy(workspace:parsling.types:boolean_false)(parsling:type)
+
+        [ setup data ]
+        dragon.copy(recent_lexling)(parsling:value.datum)
+
+        [ next iteration ]
+        dragon.jump(dragon.always, @check_for_members.loop_start)()
+    }
+
+    [ detect null data ]
+    tools.json.compile.parse.check_current_lexling.by_value(workspace, string.null, dragon.true)(workspace, recent_lexling, valid)
+    @found_new_null valid = {
+        [ setup type ]
+        dragon.copy(workspace:parsling.types:null)(parsling:type)
+
+        [ setup data ]
         dragon.copy(recent_lexling)(parsling:value.datum)
 
         [ next iteration ]
@@ -637,7 +766,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
 
     [ invalid value lexling ]
     [ raise error ]
-    dragon.set("Parsing Error: When breaking down a json object, an unknown lexling type was found.")(error_message)
+    dragon.set("Parsing Error: When breaking down a json object, an unusable lexling type was found.")(error_message)
     tools.json.compile.raise_error(workspace, error_message)(workspace)
 
     [ exit function ]
@@ -673,19 +802,14 @@ tools.json.compile.parse.check_current_lexling.by_type(workspace !tools.json.wor
 }
 
 [ check lexling ]
-tools.json.compile.parse.check_current_lexling.by_name(workspace !tools.json.workspace, expected_type !dragon.cell, expected_name !dragon.buffer, advance !dragon.cell)(workspace !tools.json.workspace, lexling !tools.json.lexling, validity !dragon.cell) = {
+tools.json.compile.parse.check_current_lexling.by_value(workspace !tools.json.workspace, value !dragon.buffer, advance !dragon.cell)(workspace !tools.json.workspace, lexling !tools.json.lexling, validity !dragon.cell) = {
     [ check valid lexling ]
     tools.json.compile.parse.retrieve_lexling(workspace)(workspace, lexling, validity)
     dragon.bits.xor(validity, dragon.constant.1)(invalid)
     dragon.jump(invalid, @exit)()
 
-    [ check for lexling type ]
-    dragon.integer.within_range(expected_type, lexling:type, expected_type, dragon.always)(invalid)
-    dragon.bits.xor(validity, dragon.constant.1)(invalid)
-    dragon.jump(invalid, @exit)()
-
     [ check for lexling name ]
-    tools.check.buffer_contents_are_equal(lexling:raw, expected_name)(validity)
+    tools.check.buffer_contents_are_equal(lexling:raw, value)(validity)
     dragon.bits.xor(validity, dragon.constant.1)(invalid)
     dragon.jump(invalid, @exit)()
 

@@ -1,4 +1,17 @@
 {
     "data": "Roaring dragons sometimes slumber...",
-    "oof": 100
+    "oof": 100,
+    "foop": {
+        "ofo": 200
+    },
+    "foopo": {
+        "ofof": 100,
+        "Hello": "hi",
+        "thing": {
+            "doer": true
+        }
+    },
+    "empty": {
+
+    }
 }
