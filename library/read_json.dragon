@@ -36,6 +36,7 @@ tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error
     dragon.pack.null()(workspace !tools.json.workspace)
     dragon.pack(text, text:start)(workspace:current_character !dragon.current)
     tools.json.lexling.types.setup()(workspace:lexling.types)
+    tools.json.parsling.types.setup()(workspace:parsling.types)
 
     [ lex ]
     tools.json.compile.lex(json, workspace)(json, workspace)
@@ -46,7 +47,7 @@ tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error
     [ parse ]
     tools.json.compile.parse(workspace)(workspace)
     @verbose.parslings verbose = {
-        [ tools.json.compile.parse.print(workspace)() ]
+        tools.json.compile.print.parslings(workspace)()
     }
 
     [ exit compilation ]
@@ -597,14 +598,14 @@ tools.json.compile.parse(workspace !tools.json.workspace)(workspace !tools.json.
 }
 
 [ parse object ]
-tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace !tools.json.workspace, parsling !tools.json.parsling) = {
+tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace !tools.json.workspace, output !tools.json.parsling) = {
     [ setup strings ]
     dragon.set("true")(string.true)
     dragon.set("false")(string.false)
     dragon.set("null")(string.null)
 
     [ setup type ]
-    dragon.copy(workspace:parsling.types:object)(parsling:type)
+    dragon.copy(workspace:parsling.types:object)(output:type)
 
     [ parse contents ]
     [ check for opener ]
@@ -623,7 +624,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     dragon.pack.null()(dummy_parsling !tools.json.parsling)
     dragon.structure.byte_size(dummy_parsling)(parsling.size)
     dragon.integer.multiply(parsling.size, dragon.constant.64)(increase)
-    dragon.list.open(increase)(parsling:value.members)
+    dragon.list.open(increase)(output:value.members)
 
     [ setup member index ]
     dragon.copy(dragon.constant.0)(member_index)
@@ -653,7 +654,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     }
 
     [ check for name string ]
-    tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, dragon.true)(workspace, recent_lexling, valid)
+    tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, dragon.true)(workspace, name, valid)
     dragon.bits.xor(valid, dragon.constant.1)(invalid)
     @missing_name invalid = {
         [ setup error ]
@@ -664,8 +665,12 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.jump(dragon.always, @exit)()
     }
 
+    [ setup pushing parsling ]
+    dragon.pack.null()(pushing_parsling !tools.json.parsling)
+    dragon.pack.null()(null_list !dragon.list)
+
     [ setup name ]
-    dragon.copy(recent_lexling)(parsling:name)
+    dragon.copy(name)(pushing_parsling:name)
 
     [ next index ]
     dragon.integer.add(member_index, dragon.constant.1)(member_index)
@@ -692,8 +697,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         [ check for error ]
         dragon.jump(workspace:error:occured, @exit)()
 
+        [ setup object name ]
+        dragon.copy(pushing_parsling:name)(temp_parsling:name)
+
         [ append object ]
-        dragon.list.append.structure(parsling:value.members, temp_parsling)()
+        dragon.list.append.structure(output:value.members, temp_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -702,11 +710,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect number ]
     tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:integer, dragon.true)(workspace, recent_lexling, valid)
     @found_new_number valid = {
-        [ setup type ]
-        dragon.copy(workspace:parsling.types:integer)(parsling:type)
+        [ setup data ]
+        dragon.pack(workspace:parsling.types:integer, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
-        [ setup number ]
-        dragon.copy(recent_lexling)(parsling:value.datum)
+        [ append object ]
+        dragon.list.append.structure(output:value.members, pushing_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -715,11 +723,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect string ]
     tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, dragon.true)(workspace, recent_lexling, valid)
     @found_new_string valid = {
-        [ setup type ]
-        dragon.copy(workspace:parsling.types:string)(parsling:type)
+        [ setup data ]
+        dragon.pack(workspace:parsling.types:string, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
-        [ setup string ]
-        dragon.copy(recent_lexling)(parsling:value.datum)
+        [ append object ]
+        dragon.list.append.structure(output:value.members, pushing_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -728,11 +736,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect boolean true ]
     tools.json.compile.parse.check_current_lexling.by_value(workspace, string.true, dragon.true)(workspace, recent_lexling, valid)
     @found_new_boolean_true valid = {
-        [ setup type ]
-        dragon.copy(workspace:parsling.types:boolean_true)(parsling:type)
-
         [ setup data ]
-        dragon.copy(recent_lexling)(parsling:value.datum)
+        dragon.pack(workspace:parsling.types:boolean_true, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
+
+        [ append object ]
+        dragon.list.append.structure(output:value.members, pushing_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -741,11 +749,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect boolean false ]
     tools.json.compile.parse.check_current_lexling.by_value(workspace, string.false, dragon.true)(workspace, recent_lexling, valid)
     @found_new_boolean_false valid = {
-        [ setup type ]
-        dragon.copy(workspace:parsling.types:boolean_false)(parsling:type)
-
         [ setup data ]
-        dragon.copy(recent_lexling)(parsling:value.datum)
+        dragon.pack(workspace:parsling.types:boolean_false, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
+
+        [ append object ]
+        dragon.list.append.structure(output:value.members, pushing_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -754,11 +762,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
     [ detect null data ]
     tools.json.compile.parse.check_current_lexling.by_value(workspace, string.null, dragon.true)(workspace, recent_lexling, valid)
     @found_new_null valid = {
-        [ setup type ]
-        dragon.copy(workspace:parsling.types:null)(parsling:type)
-
         [ setup data ]
-        dragon.copy(recent_lexling)(parsling:value.datum)
+        dragon.pack(workspace:parsling.types:null, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
+
+        [ append object ]
+        dragon.list.append.structure(output:value.members, pushing_parsling)()
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -863,4 +871,82 @@ tools.json.compile.parse.retrieve_lexling(workspace !tools.json.workspace)(works
 
     [ exit function ]
     @exit
+}
+
+[ print json parslings ]
+tools.json.compile.print.parslings(workspace !tools.json.workspace)() = {
+    [ print parslings ]
+    tools.json.compile.print.parsling(workspace, workspace:parslings:root, dragon.constant.0)()
+}
+
+[ print json parsling object ]
+tools.json.compile.print.parsling(workspace !tools.json.workspace, parsling !tools.json.parsling, tabs !dragon.cell)() = {
+    [ predefine variables ]
+    dragon.pack.null()(temp_parsling !tools.json.parsling)
+    dragon.structure.byte_size(temp_parsling !tools.json.parsling)(parsling.byte_size)
+
+    [ setup current ]
+    dragon.list.calculate.content_buffer(parsling:value.members)(members_content_buffer)
+    dragon.pack(members_content_buffer, members_content_buffer:start)(members_content_buffer.current !dragon.current)
+
+    [ print tabs ]
+    dragon.print.tabs(tabs)()
+
+    [ print name if has name ]
+    dragon.integer.within_range(dragon.constant.0, parsling:name:raw:start, dragon.constant.0, dragon.never)(has_no_name)
+    dragon.bits.xor(has_no_name, dragon.constant.1)(has_a_name)
+    @has_a_name has_a_name = {
+        [ print name ]
+        dragon.print.buffer_as_string(parsling:name:raw)()
+    }
+    @has_no_name has_no_name = {
+        [ print alias for no name ]
+        dragon.set("[no-name]")(message)
+        dragon.print.buffer_as_string(message)()
+    }
+
+    [ print separator ]
+    dragon.set(": ")(message)
+    dragon.print.buffer_as_string(message)()
+
+    [ determine type ]
+    dragon.integer.within_range(workspace:parsling.types:object, parsling:type, workspace:parsling.types:object, dragon.never)(is_object)
+    dragon.integer.within_range(workspace:parsling.types:string, parsling:type, workspace:parsling.types:null, dragon.never)(is_literal)
+
+    [ print object ]
+    @is_object is_object = {
+        [ print new line ]
+        dragon.print.new_line()()
+
+        [ setup loop start ]
+        @is_object.loop_members dragon.always = {
+            [ check current within range ]
+            dragon.current.within_range(members_content_buffer.current, dragon.always)(out_of_range)
+            dragon.jump.bottom(out_of_range, @is_object.loop_members)()
+
+            [ get parsling ]
+            dragon.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            dragon.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !dragon.buffer)
+            dragon.buffer_to_structure(temp_parsling.source)(temp_parsling !tools.json.parsling)
+
+            [ call print of parsling ]
+            dragon.integer.add(tabs, dragon.constant.1)(sub_tabs)
+            tools.json.compile.print.parsling(workspace, temp_parsling, sub_tabs)()
+
+            [ next member ]
+            dragon.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+
+            [ jump to loop start ]
+            dragon.jump.top(dragon.always, @is_object.loop_members)()
+        }
+    }
+
+    [ print raw ]
+    @is_literal is_literal = {
+        [ print value ]
+        dragon.print.buffer_as_string(parsling:value.datum:raw)()
+
+        [ next line ]
+        dragon.print.new_line()()
+    }
 }
