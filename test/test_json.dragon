@@ -8,7 +8,7 @@ dragon.main()() = {
 test.json.test_compiler()() = {
     [ test compiler ]
     [ get file data ]
-    dragon.set("./test/data/test_json.json")(file_path)
+    dragon.set("./test/data/test_json_2.json")(file_path)
     dragon.file_to_buffer(file_path)(file_text)
 
     [ print raw text ]
