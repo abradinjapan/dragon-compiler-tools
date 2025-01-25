@@ -1,0 +1,35 @@
+[ main ]
+dragon.main()() = {
+    [ test ]
+    dragon.main.test.checkers()()
+}
+
+[ test checking ]
+dragon.main.test.checkers()() = {
+    [ setup strings ]
+    dragon.set("Things")(message_a)
+    dragon.set("Thingi")(message_b)
+    dragon.set("Thingiverse")(message_c)
+    dragon.set("Things")(message_d)
+    dragon.set("Thing")(message_e)
+
+    [ check strings ]
+    tools.check.buffer_contents_are_equal(message_a, message_d)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+    tools.check.buffer_contents_are_equal(message_a, message_b)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+    tools.check.buffer_contents_are_equal(message_a, message_e)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+    tools.check.buffer_contents_are_equal(message_a, message_c)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+    tools.check.buffer_contents_are_equal(message_c, message_a)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+    tools.check.buffer_contents_are_equal(message_a, message_a)(equivalent)
+    dragon.print.debug_cell(equivalent)()
+    dragon.print.new_line()()
+}

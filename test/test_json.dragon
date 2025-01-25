@@ -1,0 +1,30 @@
+[ test main ]
+dragon.main()() = {
+    [ run first test ]
+    test.json.test_compiler()()
+}
+
+[ run test ]
+test.json.test_compiler()() = {
+    [ test compiler ]
+    [ get file data ]
+    dragon.set("./test/data/test_json.json")(file_path)
+    dragon.file_to_buffer(file_path)(file_text)
+
+    [ print raw text ]
+    dragon.print.buffer_as_string(file_text)()
+    dragon.print.new_line()()
+
+    [ compile ]
+    tools.json.compile(file_text, dragon.true)(workspace)
+    dragon.print.new_line()()
+
+    [ display message ]
+    tools.error.print_if_occured(workspace:error)()
+
+    [ clean up file ]
+    dragon.buffer.return(file_text)()
+
+    [ clean up workspace ]
+    tools.json.compile.close.workspace(workspace)()
+}

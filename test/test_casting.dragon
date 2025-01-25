@@ -1,33 +1,7 @@
 [ entry point ]
 dragon.main()() = {
-    [ initialization message ]
-    dragon.set("The dragon slumbers in the highlands...%0a;")(message)
-    dragon.print.buffer_as_string(message)()
-
-    [ test compiler ]
-    [ get file data ]
-    dragon.set("./test/data/test_json.json")(file_path)
-    dragon.file_to_buffer(file_path)(file_text)
-
-    [ print raw text ]
-    dragon.print.buffer_as_string(file_text)()
-    dragon.print.new_line()()
-
-    [ compile ]
-    tools.json.compile(file_text, dragon.true)(error)
-    dragon.print.new_line()()
-
-    [ display message ]
-    tools.error.print_if_occured(error)()
-
-    [ clean up file ]
-    dragon.buffer.return(file_text)()
-
     [ test conversions ]
     dragon.main.test.conversions()()
-
-    [ test checkers ]
-    dragon.main.test.checkers()()
 }
 
 [ test conversions ]
@@ -89,34 +63,4 @@ dragon.main.test.conversions()() = {
     dragon.print.buffer_as_string(string)()
     dragon.print.new_line()()
     dragon.buffer.return(string)()
-}
-
-[ test checking ]
-dragon.main.test.checkers()() = {
-    [ setup strings ]
-    dragon.set("Things")(message_a)
-    dragon.set("Thingi")(message_b)
-    dragon.set("Thingiverse")(message_c)
-    dragon.set("Things")(message_d)
-    dragon.set("Thing")(message_e)
-
-    [ check strings ]
-    tools.check.buffer_contents_are_equal(message_a, message_d)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
-    tools.check.buffer_contents_are_equal(message_a, message_b)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
-    tools.check.buffer_contents_are_equal(message_a, message_e)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
-    tools.check.buffer_contents_are_equal(message_a, message_c)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
-    tools.check.buffer_contents_are_equal(message_c, message_a)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
-    tools.check.buffer_contents_are_equal(message_a, message_a)(equivalent)
-    dragon.print.debug_cell(equivalent)()
-    dragon.print.new_line()()
 }

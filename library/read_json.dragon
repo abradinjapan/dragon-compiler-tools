@@ -28,7 +28,7 @@
 )
 
 [ compile ]
-tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(error !tools.error) = {
+tools.json.compile(text !dragon.buffer, verbose !dragon.cell)(workspace !tools.json.workspace) = {
     [ setup json ]
     dragon.pack.null()(json !tools.json)
 
@@ -72,6 +72,15 @@ tools.json.compile.raise_error(workspace !tools.json.workspace, message !dragon.
     dragon.list.append.buffer(workspace:error:json, header)() [ append header ]
     dragon.list.append.buffer(workspace:error:json, message)() [ append message ]
     dragon.list.append.buffer(workspace:error:json, footer)() [ append footer ]
+}
+
+[ close workspace ]
+tools.json.compile.close.workspace(workspace !tools.json.workspace)() = {
+    [ close lexlings ]
+    tools.json.lexlings.close(workspace:lexlings)()
+
+    [ close parslings ]
+    
 }
 
 
@@ -707,6 +716,12 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.jump(dragon.always, @check_for_members.loop_start)()
     }
 
+    [ detect array ]
+    tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_square_bracket, dragon.false)(workspace, recent_lexling, valid)
+    @found_new_array valid = {
+
+    }
+
     [ detect number ]
     tools.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:integer, dragon.true)(workspace, recent_lexling, valid)
     @found_new_number valid = {
@@ -788,6 +803,11 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
 
     [ exit function ]
     @exit
+}
+
+[ check for any value ]
+tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools.json.workspace, output !tools.json.parsling) = {
+    
 }
 
 [ check lexling ]
