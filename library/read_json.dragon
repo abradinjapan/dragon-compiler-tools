@@ -572,6 +572,7 @@ tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
 [ parsling types ]
 !tools.json.parsling.types
 (
+    invalid !dragon.cell,
     object !dragon.cell,
     array !dragon.cell,
     string !dragon.cell,
@@ -584,13 +585,14 @@ tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
 [ setup parsling types ]
 tools.json.parsling.types.setup()(types !tools.json.parsling.types) = {
     [ setup data ]
-    dragon.set(dragon.integer.0)(types:object)
-    dragon.set(dragon.integer.1)(types:array)
-    dragon.set(dragon.integer.2)(types:string)
-    dragon.set(dragon.integer.3)(types:integer)
-    dragon.set(dragon.integer.4)(types:boolean_false)
-    dragon.set(dragon.integer.5)(types:boolean_true)
-    dragon.set(dragon.integer.6)(types:null)
+    dragon.set(dragon.integer.0)(types:invalid)
+    dragon.set(dragon.integer.1)(types:object)
+    dragon.set(dragon.integer.2)(types:array)
+    dragon.set(dragon.integer.3)(types:string)
+    dragon.set(dragon.integer.4)(types:integer)
+    dragon.set(dragon.integer.5)(types:boolean_false)
+    dragon.set(dragon.integer.6)(types:boolean_true)
+    dragon.set(dragon.integer.7)(types:null)
 }
 
 [ parse json lexlings ]
@@ -1094,7 +1096,7 @@ tools.json.compile.print.parsling(workspace !tools.json.workspace, parsling !too
     }
     @has_no_name has_no_name = {
         [ print alias for no name ]
-        dragon.set("[no-name]")(message)
+        dragon.set("[no_name]")(message)
         dragon.print.buffer_as_string(message)()
     }
 
@@ -1103,9 +1105,18 @@ tools.json.compile.print.parsling(workspace !tools.json.workspace, parsling !too
     dragon.print.buffer_as_string(message)()
 
     [ determine type ]
+    dragon.integer.within_range(workspace:parsling.types:invalid, parsling:type, workspace:parsling.types:invalid, dragon.never)(is_invalid)
     dragon.integer.within_range(workspace:parsling.types:object, parsling:type, workspace:parsling.types:object, dragon.never)(is_object)
     dragon.integer.within_range(workspace:parsling.types:array, parsling:type, workspace:parsling.types:array, dragon.never)(is_array)
     dragon.integer.within_range(workspace:parsling.types:string, parsling:type, workspace:parsling.types:null, dragon.never)(is_literal)
+
+    [ print invalid ]
+    @is_invalid is_invalid = {
+        [ print message ]
+        dragon.set("[invalid]")(message)
+        dragon.print.buffer_as_string(message)()
+        dragon.print.new_line()()
+    }
 
     [ print object ]
     @is_object is_object = {
@@ -1171,4 +1182,77 @@ tools.json.compile.print.parsling(workspace !tools.json.workspace, parsling !too
         [ next line ]
         dragon.print.new_line()()
     }
+}
+
+
+
+[
+    Traversing
+]
+[ traverse based on name ]
+tools.json.traverse.retrieve_parsling.by_name(source_parsling !tools.json.parsling, name !dragon.buffer)(found_parsling !tools.json.parsling, not_found !dragon.cell) = {
+    [ null init output ]
+    dragon.pack.null()(found_parsling !tools.json.parsling)
+
+    [ setup metadata ]
+    dragon.structure.byte_size(source_parsling)(parsling.byte_size)
+
+    [ setup buffer ]
+    dragon.list.calculate.content_buffer(source_parsling:value.members)(members_buffer)
+
+    [ setup current ]
+    dragon.pack(members_buffer, members_buffer:start)(current_member !dragon.current)
+
+    [ setup search condition ]
+    dragon.copy(dragon.true)(not_found)
+
+    [ search for member with name ]
+    @search not_found = {
+        [ check for current within range ]
+        dragon.current.within_range(current_member, dragon.always)(no_more_parslings)
+        dragon.jump.bottom(no_more_parslings, @search)()
+
+        [ setup parsling read buffer ]
+        dragon.pack.null()(dummy !tools.json.parsling)
+        dragon.structure.byte_size(dummy)(parsling.byte_size)
+        dragon.buffer.calculate.end_address(current_member:progress, parsling.byte_size)(parsling.end)
+        dragon.pack(current_member:progress, parsling.end)(parsling.source !dragon.buffer)
+
+        [ get parsling ]
+        dragon.buffer_to_structure(parsling.source)(parsling !tools.json.parsling)
+
+        [ get name ]
+        tools.json.compile.get_name_from_lexling(parsling:name)(parsling_name)
+
+        [ check name ]
+        tools.check.buffer_contents_are_equal(name, parsling_name)(found_name)
+
+        [ if name was matched ]
+        @match found_name = {
+            [ disable not found ]
+            dragon.copy(dragon.false)(not_found)
+
+            [ setup output ]
+            dragon.copy(parsling)(found_parsling)
+
+            [ return ]
+            dragon.jump.bottom(dragon.always, @search)()
+        }
+
+        [ advance current ]
+        dragon.integer.add(current_member:progress, parsling.byte_size)(current_member:progress)
+
+        [ next parsling ]
+        dragon.jump.top(dragon.always, @search)()
+    }
+}
+
+[ return lexling string without surrounding double quotes ]
+tools.json.compile.get_name_from_lexling(source_lexling !tools.json.lexling)(name !dragon.buffer) = {
+    [ copy string ]
+    dragon.copy(source_lexling:raw)(name)
+
+    [ clip quotes ]
+    dragon.integer.add(name:start, dragon.ascii_character.byte_size)(name:start)
+    dragon.integer.subtract(name:end, dragon.ascii_character.byte_size)(name:end)
 }

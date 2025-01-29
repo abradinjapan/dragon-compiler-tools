@@ -8,7 +8,7 @@ dragon.main()() = {
 test.json.test_compiler()() = {
     [ test compiler ]
     [ get file data ]
-    dragon.set("./test/data/test_json_2.json")(file_path)
+    dragon.set("./test/data/test_json.json")(file_path)
     dragon.file_to_buffer(file_path)(file_text)
 
     [ print raw text ]
@@ -22,9 +22,41 @@ test.json.test_compiler()() = {
     [ display message ]
     tools.error.print_if_occured(workspace:error)()
 
+    [ test traversal ]
+    dragon.bits.xor(workspace:error:occured, dragon.constant.1)(no_error)
+    @traverse no_error = {
+        [ DEBUG ]
+        dragon.set("Traversing!%0a;")(message)
+        dragon.print.buffer_as_string(message)()
+
+        [ test ]
+        test.json.test_traversal(workspace, workspace:parslings)()
+    }
+
     [ clean up file ]
     dragon.buffer.return(file_text)()
 
     [ clean up workspace ]
     tools.json.compile.close.workspace(workspace)()
+}
+
+[ test json traversal ]
+test.json.test_traversal(workspace !tools.json.workspace, parslings !tools.json.parslings)() = {
+    [ setup strings ]
+    dragon.set("foopo")(name_0)
+    dragon.set("Hello")(name_1)
+
+    [ test traversals ]
+    tools.json.traverse.retrieve_parsling.by_name(parslings:root, name_0)(parsling_0, not_found)
+    tools.json.traverse.retrieve_parsling.by_name(parsling_0, name_1)(parsling_1, not_found)
+
+    [ DEBUG ]
+    @failure not_found = {
+        [ setup and print message ]
+        dragon.set("Traversal Failure!%0a;")(message)
+        dragon.print.buffer_as_string(message)()
+    }
+
+    [ print parsling value ]
+    tools.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
 }
