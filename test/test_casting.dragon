@@ -26,11 +26,11 @@ dragon.main.test.conversions()() = {
 
     [ print results ]
     dragon.print.buffer_as_string(header)()
-    dragon.print.debug_cell(base_2.count)()
+    dragon.print.integer.unsigned(base_2.count)()
     dragon.print.buffer_as_string(separator)()
-    dragon.print.debug_cell(base_10.count)()
+    dragon.print.integer.unsigned(base_10.count)()
     dragon.print.buffer_as_string(separator)()
-    dragon.print.debug_cell(base_16.count)()
+    dragon.print.integer.unsigned(base_16.count)()
     dragon.print.buffer_as_string(footer)()
     dragon.print.new_line()()
 

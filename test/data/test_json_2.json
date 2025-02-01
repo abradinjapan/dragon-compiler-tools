@@ -16,5 +16,21 @@
         "oof",
         12234
     ],
-    "girfurjigglestan": 100
+    "girfurjigglestan": 100,
+    "oof": 100,
+    "foop": {
+        "ofo": 200
+    },
+    "foopo": {
+        "ofof": 100,
+        "Hello": "hi",
+        "thing": {
+            "doer": true,
+            "doerdoer": false,
+            "thingdoer": null
+        }
+    },
+    "empty": {
+
+    }
 }
