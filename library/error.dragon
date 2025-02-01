@@ -18,7 +18,7 @@ tools.error.setup_blank()(error !tools.error) = {
     dragon.list.open(increase)(error:json)
 
     [ append message ]
-    dragon.list.append.buffer(error:json, message)()
+    dragon.list.append.buffer_data(error:json, message)(error:json)
 }
 
 [ print if occured ]

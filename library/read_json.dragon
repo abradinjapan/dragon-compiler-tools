@@ -69,9 +69,9 @@ tools.json.compile.raise_error(workspace !tools.json.workspace, message !dragon.
     dragon.list.open(increase)(workspace:error:json)
 
     [ create error json ]
-    dragon.list.append.buffer(workspace:error:json, header)() [ append header ]
-    dragon.list.append.buffer(workspace:error:json, message)() [ append message ]
-    dragon.list.append.buffer(workspace:error:json, footer)() [ append footer ]
+    dragon.list.append.buffer_data(workspace:error:json, header)(workspace:error:json) [ append header ]
+    dragon.list.append.buffer_data(workspace:error:json, message)(workspace:error:json) [ append message ]
+    dragon.list.append.buffer_data(workspace:error:json, footer)(workspace:error:json) [ append footer ]
 }
 
 [ close workspace ]
