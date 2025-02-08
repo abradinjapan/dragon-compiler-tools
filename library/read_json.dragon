@@ -142,6 +142,14 @@ tools.json.lexling.print(lexling !tools.json.lexling)() = {
     dragon.print.buffer_as_string(footer)()
 }
 
+[ append lexling ]
+tools.json.append.lexling(list !dragon.list, lexling !tools.json.lexling)(list !dragon.list) = {
+    [ append members ]
+    dragon.list.append.buffer(list, lexling:raw)(list)
+    dragon.list.append.cell(list, lexling:type)(list)
+    tools.json.append.location(list, lexling:location)(list)
+}
+
 [ lexling location ]
 !tools.text.location
 (
@@ -149,6 +157,13 @@ tools.json.lexling.print(lexling !tools.json.lexling)() = {
     line_index !dragon.cell,
     character_index !dragon.cell
 )
+
+[ append lexling location ]
+tools.json.append.location(list !dragon.list, location !tools.text.location)(list !dragon.list) = {
+    dragon.list.append.cell(list, location:file_index)(list)
+    dragon.list.append.cell(list, location:line_index)(list)
+    dragon.list.append.cell(list, location:character_index)(list)
+}
 
 [ lexling type structure ]
 !tools.json.lexling.types
@@ -233,7 +248,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -250,7 +265,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -267,7 +282,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -284,7 +299,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -301,7 +316,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -318,7 +333,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.copy(advancement)(workspace:current_character:progress)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to loop start ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -360,7 +375,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
             dragon.copy(advancement)(workspace:current_character:progress)
 
             [ append lexling ]
-            dragon.list.append.structure(workspace:lexlings:list, lexling)()
+            tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
             [ jump to loop start ]
             dragon.jump(dragon.always, @lexing.loop.start)()
@@ -411,7 +426,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.pack(text, workspace:lexling.types:integer, null_location)(lexling !tools.json.lexling)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to start of lexing loop ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -459,7 +474,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
         dragon.pack(text, workspace:lexling.types:name, null_location)(lexling !tools.json.lexling)
 
         [ append lexling ]
-        dragon.list.append.structure(workspace:lexlings:list, lexling)()
+        tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 
         [ jump to start of lexing loop ]
         dragon.jump(dragon.always, @lexing.loop.start)()
@@ -475,7 +490,7 @@ tools.json.compile.lex(json !tools.json, workspace !tools.json.workspace)(json !
     [ setup end of file lexling ]
     dragon.set("[end_of_file]")(end_of_file_message)
     dragon.pack(end_of_file_message, workspace:lexling.types:end_of_file, null_location)(lexling !tools.json.lexling)
-    dragon.list.append.structure(workspace:lexlings:list, lexling)()
+    tools.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
 }
 
 [ detect and get name character ]
@@ -568,6 +583,16 @@ tools.json.compile.lex.print(workspace !tools.json.workspace)() = {
     value.datum !tools.json.lexling,
     value.members !dragon.list [ !tools.json.parsling ]
 )
+
+[ append parsling ]
+tools.json.append.parsling(list !dragon.list, parsling !tools.json.parsling)(list !dragon.list) = {
+    [ append members ]
+    dragon.list.append.cell(list, parsling:type)(list)
+    tools.json.append.lexling(list, parsling:name)(list)
+    tools.json.append.lexling(list, parsling:value.datum)(list)
+    dragon.list.append.list(list, parsling:value.members)(list)
+}
+
 
 [ parsling types ]
 !tools.json.parsling.types
@@ -712,7 +737,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.copy(pushing_parsling:name)(temp_parsling:name)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, temp_parsling)()
+        tools.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -731,7 +756,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.copy(pushing_parsling:name)(temp_parsling:name)
 
         [ append array ]
-        dragon.list.append.structure(output:value.members, temp_parsling)()
+        tools.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -744,7 +769,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.pack(workspace:parsling.types:integer, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -757,7 +782,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.pack(workspace:parsling.types:string, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -770,7 +795,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.pack(workspace:parsling.types:boolean_true, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -783,7 +808,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.pack(workspace:parsling.types:boolean_false, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -796,7 +821,7 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
         dragon.pack(workspace:parsling.types:null, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -899,7 +924,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.copy(pushing_parsling:name)(temp_parsling:name)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, temp_parsling)()
+        tools.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -912,7 +937,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.pack(workspace:parsling.types:integer, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -925,7 +950,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.pack(workspace:parsling.types:string, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -938,7 +963,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.pack(workspace:parsling.types:boolean_true, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -951,7 +976,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.pack(workspace:parsling.types:boolean_false, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()
@@ -964,7 +989,7 @@ tools.json.compile.parse.array(workspace !tools.json.workspace)(workspace !tools
         dragon.pack(workspace:parsling.types:null, name, recent_lexling, null_list)(pushing_parsling !tools.json.parsling)
 
         [ append object ]
-        dragon.list.append.structure(output:value.members, pushing_parsling)()
+        tools.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
 
         [ next iteration ]
         dragon.jump(dragon.always, @check_for_members.loop_start)()

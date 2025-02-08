@@ -30,16 +30,16 @@ dragon.main()() = {
     dragon.list.open(buffer_structure.byte_size)(test.elf)
 
     [ enlist files into json test ]
-    dragon.list.append.structure(test.json, file.test_json)()
-    dragon.list.append.structure(test.json, file.read_json)()
-    dragon.list.append.structure(test.json, file.cast)()
-    dragon.list.append.structure(test.json, file.error)()
-    dragon.list.append.structure(test.json, file.check)()
+    dragon.list.append.buffer(test.json, file.test_json)(test.json)
+    dragon.list.append.buffer(test.json, file.read_json)(test.json)
+    dragon.list.append.buffer(test.json, file.cast)(test.json)
+    dragon.list.append.buffer(test.json, file.error)(test.json)
+    dragon.list.append.buffer(test.json, file.check)(test.json)
 
     [ enlist files into elf test ]
-    dragon.list.append.structure(test.elf, file.test_elf)()
-    dragon.list.append.structure(test.elf, file.binary.binary)()
-    dragon.list.append.structure(test.elf, file.binary.elf)()
+    dragon.list.append.buffer(test.elf, file.test_elf)(test.elf)
+    dragon.list.append.buffer(test.elf, file.binary.binary)(test.elf)
+    dragon.list.append.buffer(test.elf, file.binary.elf)(test.elf)
 
     [ just run tests ]
     tools.just_run(test.json, test.json.name)()
