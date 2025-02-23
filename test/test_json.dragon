@@ -74,7 +74,7 @@ test.json.test_traversal.by_name(workspace !tools.json.workspace, parslings !too
 test.json.test_traversal.by_index(workspace !tools.json.workspace, parslings !tools.json.parslings)() = {
     [ test traversals ]
     tools.json.traverse.retrieve_parsling.by_index(parslings:root, dragon.constant.0)(parsling_0, not_found)
-    [ tools.json.traverse.retrieve_parsling.by_index(parsling_0, dragon.constant.1)(parsling_1, not_found) ]
+    tools.json.traverse.retrieve_parsling.by_index(parsling_0, dragon.constant.1)(parsling_1, not_found)
 
     [ DEBUG ]
     @failure not_found = {
@@ -84,5 +84,5 @@ test.json.test_traversal.by_index(workspace !tools.json.workspace, parslings !to
     }
 
     [ print parsling value ]
-    tools.json.compile.print.parsling(workspace, parsling_0, dragon.constant.0)()
+    tools.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
 }
