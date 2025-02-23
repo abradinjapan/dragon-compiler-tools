@@ -1279,16 +1279,27 @@ tools.json.traverse.retrieve_parsling.by_index(source_parsling !tools.json.parsl
 
     [ calculate list metadata ]
     tools.json.traverse.calculate.parsling_list_metadata(source_parsling)(parsling_members_content, parsling_byte_size, member_count)
-    
+
     [ check if the index is valid ]
-    dragon.integer.within_range(dragon.constant.0, index, member_count, dragon.never)(valid_index)
+    [ if member count is zero ]
+    dragon.integer.within_range(dragon.constant.0, member_count, dragon.constant.0, dragon.never)(no_members_available)
+    @no_members_available no_members_available = {
+        [ setup output ]
+        dragon.copy(dragon.true)(invalid_index)
+
+        [ exit function ]
+        dragon.jump.bottom(dragon.always, @dragon.master_scope)()
+    }
+
+    [ check member index ]
+    dragon.integer.subtract(member_count, dragon.constant.1)(max_member_index)
+    dragon.integer.within_range(dragon.constant.0, index, max_member_index, dragon.never)(valid_index)
     dragon.bits.xor(valid_index, dragon.constant.1)(invalid_index)
 
     [ if valid index ]
     @valid_index valid_index = {
         [ calculate structure ]
         dragon.integer.multiply(index, parsling_byte_size)(member_offset)
-        dragon.integer.subtract(member_offset, dragon.constant.1)(member_offset)
         dragon.integer.add(member_offset, parsling_members_content:start)(parsling.start)
         dragon.buffer.calculate.end_address(parsling.start, parsling_byte_size)(parsling.end)
         dragon.pack(parsling.start, parsling.end)(parsling.buffer !dragon.buffer)
@@ -1307,9 +1318,9 @@ tools.json.traverse.calculate.parsling_list_metadata(parsling !tools.json.parsli
     dragon.structure.byte_size(parsling)(parsling_byte_size)
 
     [ calculate content length, content buffer and member count ]
-    dragon.list.calculate.content_buffer(parsling:value.members)(members_buffer)
-    dragon.buffer.calculate.length(members_buffer)(members_buffer.byte_length)
-    dragon.integer.divide(members_buffer.byte_length, parsling_byte_size)(parsling_count)
+    dragon.list.calculate.content_buffer(parsling:value.members)(content)
+    dragon.buffer.calculate.length(content)(content.byte_length)
+    dragon.integer.divide(content.byte_length, parsling_byte_size)(parsling_count)
 }
 
 [ return lexling string without surrounding double quotes ]
