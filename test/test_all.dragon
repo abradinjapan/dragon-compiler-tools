@@ -6,7 +6,7 @@ dragon.main()() = {
 
     [ setup file paths ]
     dragon.set("./test/test_json.dragon")(file_path.test_json)
-    dragon.set("./library/read_json.dragon")(file_path.read_json)
+    dragon.set("./library/json.dragon")(file_path.read_json)
     dragon.set("./library/cast.dragon")(file_path.cast)
     dragon.set("./library/error.dragon")(file_path.error)
     dragon.set("./library/check.dragon")(file_path.check)
