@@ -15,6 +15,9 @@ test.json.test_compiler()() = {
     dragon.print.buffer_as_string(file_text)()
     dragon.print.new_line()()
 
+    [ for speed, disable address catching ]
+    dragon.copy(dragon.true)(dragon.catch_addresses)
+
     [ compile ]
     tools.json.compile(file_text, dragon.true)(workspace)
     dragon.print.new_line()()
@@ -40,6 +43,15 @@ test.json.test_compiler()() = {
         [ test by index ]
         test.json.test_traversal.by_index(workspace, workspace:parslings)()
         dragon.print.new_line()()
+
+        [ DEBUG ]
+        dragon.set("Stringifying!%0a;")(message)
+        dragon.print.buffer_as_string(message)()
+
+        [ test stringifyer ]
+        tools.json.stringify.parslings(workspace !tools.json.workspace)(string !dragon.buffer)
+        dragon.print.buffer_as_string(string)()
+        dragon.buffer.return(string)()
     }
 
     [ clean up file ]

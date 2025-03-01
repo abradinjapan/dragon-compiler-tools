@@ -593,7 +593,6 @@ tools.json.append.parsling(list !dragon.list, parsling !tools.json.parsling)(lis
     dragon.list.append.list(list, parsling:value.members)(list)
 }
 
-
 [ parsling types ]
 !tools.json.parsling.types
 (
@@ -642,6 +641,9 @@ tools.json.compile.parse.object_body(workspace !tools.json.workspace)(workspace 
 
     [ setup type ]
     dragon.copy(workspace:parsling.types:object)(output:type)
+
+    [ null init output name ]
+    dragon.pack.null()(output:name !tools.json.lexling)
 
     [ parse contents ]
     [ check for opener ]
@@ -1331,4 +1333,192 @@ tools.json.compile.get_name_from_lexling(source_lexling !tools.json.lexling)(nam
     [ clip quotes ]
     dragon.integer.add(name:start, dragon.ascii_character.byte_size)(name:start)
     dragon.integer.subtract(name:end, dragon.ascii_character.byte_size)(name:end)
+}
+
+
+
+[
+    Stringify
+]
+[ stringify json parslings ]
+tools.json.stringify.parslings(workspace !tools.json.workspace)(string !dragon.buffer) = {
+    [ setup list ]
+    [ dragon.set(dragon.integer.1048576)(increase) ]
+    dragon.set(dragon.integer.100)(increase)
+    dragon.list.open(increase)(list)
+
+    [ stringify parslings ]
+    tools.json.stringify.parsling(workspace, workspace:parslings:root, list, dragon.constant.0)(list)
+
+    [ turn string list into buffer ]
+    dragon.list.duplicate_content(list)(string)
+
+    [ deallocate original list ]
+    dragon.list.close(list)()
+}
+
+[ stringify json parsling object ]
+tools.json.stringify.parsling(workspace !tools.json.workspace, parsling !tools.json.parsling, string !dragon.list, tabs !dragon.cell)(string !dragon.list) = {
+    [ predefine variables ]
+    dragon.pack.null()(temp_parsling !tools.json.parsling)
+    dragon.structure.byte_size(temp_parsling !tools.json.parsling)(parsling.byte_size)
+    dragon.set("{")(left_curly_bracket)
+    dragon.set("}")(right_curly_bracket)
+    dragon.set("[")(left_square_bracket)
+    dragon.set("]")(right_square_bracket)
+    dragon.set(": ")(separator)
+    dragon.set(",")(comma)
+
+    [ setup current ]
+    dragon.list.calculate.content_buffer(parsling:value.members)(members_content_buffer)
+    dragon.pack(members_content_buffer, members_content_buffer:start)(members_content_buffer.current !dragon.current)
+
+    [ print tabs ]
+    dragon.list.append.tabs(string, tabs)(string)
+
+    [ print name if has name ]
+    dragon.integer.within_range(dragon.constant.0, parsling:name:raw:start, dragon.constant.0, dragon.always)(has_a_name)
+    @has_a_name has_a_name = {
+        [ append name ]
+        dragon.list.append.buffer_data(string, parsling:name:raw)(string)
+
+        [ print separator ]
+        dragon.list.append.buffer_data(string, separator)(string)
+    }
+
+    [ determine type ]
+    dragon.integer.within_range(workspace:parsling.types:invalid, parsling:type, workspace:parsling.types:invalid, dragon.never)(is_invalid)
+    dragon.integer.within_range(workspace:parsling.types:object, parsling:type, workspace:parsling.types:object, dragon.never)(is_object)
+    dragon.integer.within_range(workspace:parsling.types:array, parsling:type, workspace:parsling.types:array, dragon.never)(is_array)
+    dragon.integer.within_range(workspace:parsling.types:string, parsling:type, workspace:parsling.types:null, dragon.never)(is_literal)
+
+    [ print invalid ]
+    @is_invalid is_invalid = {
+        [ print message ]
+        dragon.set("[invalid]")(message)
+        dragon.list.append.buffer_data(string, message)(string)
+        dragon.list.append.new_line(string)(string)
+    }
+
+    [ print object ]
+    @is_object is_object = {
+        [ append opener ]
+        dragon.list.append.buffer_data(string, left_curly_bracket)(string)
+
+        [ append new line ]
+        dragon.list.append.new_line(string)(string)
+
+        [ setup member count ]
+        dragon.copy(dragon.constant.0)(member_index)
+
+        [ setup loop start ]
+        @is_object.loop_members dragon.always = {
+            [ check current within range ]
+            dragon.current.within_range(members_content_buffer.current, dragon.always)(out_of_range)
+            dragon.jump.bottom(out_of_range, @is_object.loop_members)()
+
+            [ get parsling ]
+            dragon.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            dragon.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !dragon.buffer)
+            dragon.buffer_to_structure(temp_parsling.source)(temp_parsling !tools.json.parsling)
+
+            [ call print of parsling ]
+            dragon.integer.add(tabs, dragon.constant.1)(sub_tabs)
+            tools.json.stringify.parsling(workspace, temp_parsling, string, sub_tabs)(string)
+
+            [ check for comma ]
+            tools.json.calculate.comma_required(parsling, member_index)(comma_required)
+            @comma_required.object comma_required = {
+                dragon.list.append.buffer_data(string, comma)(string)
+            }
+
+            [ new line ]
+            dragon.list.append.new_line(string)(string)
+
+            [ next member ]
+            dragon.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+            dragon.integer.add(member_index, dragon.constant.1)(member_index)
+
+            [ jump to loop start ]
+            dragon.jump.top(dragon.always, @is_object.loop_members)()
+        }
+
+        [ append closer ]
+        dragon.list.append.tabs(string, tabs)(string)
+        dragon.list.append.buffer_data(string, right_curly_bracket)(string)
+    }
+
+    [ print array ]
+    @is_array is_array = {
+        [ append opener ]
+        dragon.list.append.buffer_data(string, left_square_bracket)(string)
+
+        [ print new line ]
+        dragon.list.append.new_line(string)(string)
+
+        [ setup loop start ]
+        @is_array.loop_members dragon.always = {
+            [ check current within range ]
+            dragon.current.within_range(members_content_buffer.current, dragon.always)(out_of_range)
+            dragon.jump.bottom(out_of_range, @is_array.loop_members)()
+
+            [ get parsling ]
+            dragon.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            dragon.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !dragon.buffer)
+            dragon.buffer_to_structure(temp_parsling.source)(temp_parsling !tools.json.parsling)
+
+            [ call print of parsling ]
+            dragon.integer.add(tabs, dragon.constant.1)(sub_tabs)
+            tools.json.stringify.parsling(workspace, temp_parsling, string, sub_tabs)(string)
+
+            [ check for comma ]
+            tools.json.calculate.comma_required(parsling, member_index)(comma_required)
+            @comma_required.array comma_required = {
+                dragon.list.append.buffer_data(string, comma)(string)
+            }
+
+            [ new line ]
+            dragon.list.append.new_line(string)(string)
+
+            [ next member ]
+            dragon.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+            dragon.integer.add(member_index, dragon.constant.1)(member_index)
+
+            [ jump to loop start ]
+            dragon.jump.top(dragon.always, @is_array.loop_members)()
+        }
+
+        [ append closer ]
+        dragon.list.append.tabs(string, tabs)(string)
+        dragon.list.append.buffer_data(string, right_square_bracket)(string)
+    }
+
+    [ print raw ]
+    @is_literal is_literal = {
+        [ print value ]
+        dragon.list.append.buffer_data(string, parsling:value.datum:raw)(string)
+    }
+}
+
+[ check if a comma is required ]
+tools.json.calculate.comma_required(parsling !tools.json.parsling, index !dragon.cell)(comma_required !dragon.cell) = {
+    [ calculate max count ]
+    tools.json.calculate.parsling_count_in_list(parsling)(count)
+    dragon.integer.subtract(count, dragon.constant.1)(max_index)
+
+    [ calculate if is last comma ]
+    dragon.integer.within_range(max_index, index, max_index, dragon.always)(comma_required)
+}
+
+[ calculate parsling member count ]
+tools.json.calculate.parsling_count_in_list(parsling !tools.json.parsling)(count !dragon.cell) = {
+    [ calculate parsling size ]
+    dragon.structure.byte_size(parsling)(size)
+
+    [ get content buffer length ]
+    dragon.list.calculate.content_buffer(parsling:value.members)(content)
+    dragon.buffer.calculate.length(content)(length)
+
+    [ calculate count ]
+    dragon.integer.divide(length, size)(count)
 }
