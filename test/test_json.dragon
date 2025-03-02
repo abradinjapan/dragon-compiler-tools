@@ -19,11 +19,11 @@ test.json.test_compiler()() = {
     dragon.copy(dragon.true)(dragon.catch_addresses)
 
     [ compile ]
-    tools.json.compile(file_text, dragon.true)(workspace)
+    dragon.json.compile(file_text, dragon.true)(workspace)
     dragon.print.new_line()()
 
     [ display message ]
-    tools.error.print_if_occured(workspace:error)()
+    dragon.error.print_if_occured(workspace:error)()
 
     [ test traversal ]
     dragon.bits.xor(workspace:error:occured, dragon.constant.1)(no_error)
@@ -49,7 +49,7 @@ test.json.test_compiler()() = {
         dragon.print.buffer_as_string(message)()
 
         [ test stringifyer ]
-        tools.json.stringify.parslings(workspace !tools.json.workspace)(string !dragon.buffer)
+        dragon.json.stringify.parslings(workspace !dragon.json.workspace)(string !dragon.buffer)
         dragon.print.buffer_as_string(string)()
         dragon.buffer.return(string)()
     }
@@ -58,18 +58,18 @@ test.json.test_compiler()() = {
     dragon.buffer.return(file_text)()
 
     [ clean up workspace ]
-    tools.json.compile.close.workspace(workspace)()
+    dragon.json.compile.close.workspace(workspace)()
 }
 
 [ test json traversal by name ]
-test.json.test_traversal.by_name(workspace !tools.json.workspace, parslings !tools.json.parslings)() = {
+test.json.test_traversal.by_name(workspace !dragon.json.workspace, parslings !dragon.json.parslings)() = {
     [ setup strings ]
     dragon.set("foopo")(name_0)
     dragon.set("Hello")(name_1)
 
     [ test traversals ]
-    tools.json.traverse.retrieve_parsling.by_name(parslings:root, name_0)(parsling_0, not_found)
-    tools.json.traverse.retrieve_parsling.by_name(parsling_0, name_1)(parsling_1, not_found)
+    dragon.json.traverse.retrieve_parsling.by_name(parslings:root, name_0)(parsling_0, not_found)
+    dragon.json.traverse.retrieve_parsling.by_name(parsling_0, name_1)(parsling_1, not_found)
 
     [ DEBUG ]
     @failure not_found = {
@@ -79,14 +79,14 @@ test.json.test_traversal.by_name(workspace !tools.json.workspace, parslings !too
     }
 
     [ print parsling value ]
-    tools.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
+    dragon.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
 }
 
 [ test json traversal by index ]
-test.json.test_traversal.by_index(workspace !tools.json.workspace, parslings !tools.json.parslings)() = {
+test.json.test_traversal.by_index(workspace !dragon.json.workspace, parslings !dragon.json.parslings)() = {
     [ test traversals ]
-    tools.json.traverse.retrieve_parsling.by_index(parslings:root, dragon.constant.0)(parsling_0, not_found)
-    tools.json.traverse.retrieve_parsling.by_index(parsling_0, dragon.constant.1)(parsling_1, not_found)
+    dragon.json.traverse.retrieve_parsling.by_index(parslings:root, dragon.constant.0)(parsling_0, not_found)
+    dragon.json.traverse.retrieve_parsling.by_index(parsling_0, dragon.constant.1)(parsling_1, not_found)
 
     [ DEBUG ]
     @failure not_found = {
@@ -96,5 +96,5 @@ test.json.test_traversal.by_index(workspace !tools.json.workspace, parslings !to
     }
 
     [ print parsling value ]
-    tools.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
+    dragon.json.compile.print.parsling(workspace, parsling_1, dragon.constant.0)()
 }
