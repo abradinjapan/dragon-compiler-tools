@@ -1,0 +1,6 @@
+[ Notes ]
+[
+    Each parsling node will have its own dedicated structure.
+]
+
+[ turn json specification into parser ]

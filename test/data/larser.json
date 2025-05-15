@@ -1,0 +1,223 @@
+{
+    "larser_name": "dargonjargon",
+    "lexer": {
+        "entry_point": "program",
+        "nodes": [
+            {
+                "name": "program",
+                "configurations": [
+                    [ "files", "[end_of_files]" ]
+                ]
+            },
+            {
+                "name": "files",
+                "configurations": [
+                    [ "file", "files" ],
+                    [ "file" ]
+                ]
+            },
+            {
+                "name": "file",
+                "configurations": [
+                    [ "declarations", "[end_of_file]" ]
+                ]
+            },
+            {
+                "name": "declarations",
+                "configurations": [
+                    [ "declaration", "declarations" ],
+                    [ "declaration" ]
+                ]
+            },
+            {
+                "name": "declaration",
+                "configurations": [
+                    [ "function.declaration" ],
+                    [ "structure.declaration" ]
+                ]
+            },
+
+
+
+
+
+            {
+                "name": "function.declaration",
+                "configurations": [
+                    [ "function.declaration.header", "function.declaration.assignment" ]
+                ]
+            },
+            {
+                "name": "function.declaration.header",
+                "configurations": [
+                    [ "function.declaration.header.name", "function.declaration.header.arguments.container", "function.declaration.header.arguments.container" ]
+                ]
+            },
+            {
+                "name": "function.declaration.header.name",
+                "configurations": [
+                    [ "generic.name" ]
+                ]
+            },
+            {
+                "name": "function.declaration.header.arguments.container",
+                "configurations": [
+                    [ "declaration.arguments.container" ]
+                ]
+            },
+
+
+
+
+
+            {
+                "name": "structure.declaration",
+                "configurations": [
+                    [ "structure.declaration.type", "structure.declaration.arguments.container" ]
+                ]
+            },
+            {
+                "name": "structure.declaration.type",
+                "configurations": [
+                    [ "structure.type" ]
+                ]
+            },
+            {
+                "name": "structure.declaration.arguments.container",
+                "configurations": [
+                    [ "declaration.arguments.container" ]
+                ]
+            },
+            {
+                "name": "structure.type",
+                "configurations": [
+                    [ "type_marker", "generic.name" ]
+                ]
+            },
+
+
+
+
+
+            {
+                "name": "declaration.arguments.container",
+                "configurations": [
+                    [ "declaration.arguments.starter", "declaration.arguments.ender" ],
+                    [ "declaration.arguments.starter", "declaration.arguments", "declaration.arguments.ender" ]
+                ]
+            },
+            {
+                "name": "declaration.arguments",
+                "configurations": [
+                    [ "declaration.argument", "declaration.arguments.separator", "declaration.arguments" ],
+                    [ "declaration.argument" ]
+                ]
+            },
+            {
+                "name": "declaration.argument",
+                "configurations": [
+                    [ "declaration.argument.name", "declaration.argument.type" ]
+                ]
+            },
+            {
+                "name": "declaration.argument.name",
+                "configurations": [
+                    [ "generic.name" ]
+                ]
+            },
+            {
+                "name": "declaration.argument.type",
+                "configurations": [
+                    [ "structure.type" ]
+                ]
+            },
+
+
+
+
+
+            {
+                "name": "function.declaration.assignment",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ "=" , "=" ]
+                            ],
+                            "max_length": "1"
+                        }
+                    ]
+                ]
+            },
+            {
+                "name": "declaration.arguments.starter",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ "(" , "(" ]
+                            ],
+                            "max_length": "1"
+                        }
+                    ]
+                ]
+            },
+            {
+                "name": "declaration.arguments.ender",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ ")" , ")" ]
+                            ],
+                            "max_length": "1"
+                        }
+                    ]
+                ]
+            },
+            {
+                "name": "declaration.arguments.separator",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ "," , "," ]
+                            ],
+                            "max_length": "1"
+                        }
+                    ]
+                ]
+            },
+            {
+                "name": "type_marker",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ "!" , "!" ]
+                            ],
+                            "max_length": "1"
+                        }
+                    ]
+                ]
+            },
+            {
+                "name": "generic.name",
+                "configurations": [
+                    [
+                        {
+                            "legal_ranges": [
+                                [ "a" , "z" ],
+                                [ "A" , "Z" ],
+                                [ "0" , "9" ],
+                                [ "_" , "_" ],
+                                [ "." , "." ]
+                            ],
+                            "max_length": "infinite"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+}

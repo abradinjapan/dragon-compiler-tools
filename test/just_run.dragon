@@ -10,17 +10,18 @@ tools.just_run(sources !dragon.list, test_name !dragon.buffer)() = {
     dragon.print.new_line()()
 
     [ compile ]
-    dragon.compiler.compile(sources.buffer, dragon.true, dragon.false, dragon.true)(byte_code, debug_information, error.occured, error.message, error.location.file_index, error.location.line_number, error.location.character_index)
+    dragon.compiler.configure.default_compile()(settings)
+    dragon.compiler.compile(sources.buffer, settings)(byte_code, debug_information, error)
 
     [ check for compilation error ]
-    @print_compilation_error error.occured = {
-        dragon.print.buffer_as_string(error.message)()
+    @print_compilation_error error:occured = {
+        dragon.print.buffer_as_string(error:message)()
         dragon.print.new_line()()
-        dragon.print.integer.unsigned(error.location.file_index)()
+        dragon.print.integer.unsigned(error:location:file_index)()
         dragon.print.new_line()()
-        dragon.print.integer.unsigned(error.location.line_number)()
+        dragon.print.integer.unsigned(error:location:line_number)()
         dragon.print.new_line()()
-        dragon.print.integer.unsigned(error.location.character_index)()
+        dragon.print.integer.unsigned(error:location:character_index)()
         dragon.print.new_line()()
         dragon.jump(dragon.always, @exit)()
     }

@@ -1,46 +1,71 @@
-[ main ]
+[ run all tests ]
 dragon.main()() = {
+    test.json()()
+    test.elf()()
+}
+
+[ run json test ]
+test.json()() = {
     [ setup test names ]
-    dragon.set("test.json")(test.json.name)
-    dragon.set("test.elf")(test.elf.name)
+    dragon.set("test.json")(test_name)
 
     [ setup file paths ]
     dragon.set("./test/test_json.dragon")(file_path.test_json)
+
+    [ load files ]
+    dragon.file_to_buffer(file_path.test_json)(file.test_json)
+
+    [ setup lists ]
+    dragon.structure.byte_size(file.test_json)(buffer_structure.byte_size)
+    dragon.list.open(buffer_structure.byte_size)(files)
+
+    [ enlist files into json test ]
+    dragon.list.append.buffer(files, file.test_json)(files)
+
+    [ just run tests ]
+    tools.just_run(files, test_name)()
+
+    [ clean up ]
+    [ return files ]
+    dragon.buffer.return(file.test_json)()
+
+    [ return lists ]
+    dragon.list.close(files)()
+}
+
+[ run elf test ]
+test.elf()() = {
+    [ test name ]
+    dragon.set("test.elf")(test_name)
+
+    [ the test's file names ]
     dragon.set("./test/test_elf.dragon")(file_path.test_elf)
     dragon.set("./library/binary/binary.dragon")(file_path.binary.binary)
     dragon.set("./library/binary/elf.dragon")(file_path.binary.elf)
 
     [ load files ]
-    dragon.file_to_buffer(file_path.test_json)(file.test_json)
     dragon.file_to_buffer(file_path.test_elf)(file.test_elf)
     dragon.file_to_buffer(file_path.binary.binary)(file.binary.binary)
     dragon.file_to_buffer(file_path.binary.elf)(file.binary.elf)
 
     [ setup lists ]
-    dragon.structure.byte_size(file.test_json)(buffer_structure.byte_size)
-    dragon.list.open(buffer_structure.byte_size)(test.json)
-    dragon.list.open(buffer_structure.byte_size)(test.elf)
+    dragon.structure.byte_size(file.test_elf)(buffer_structure.byte_size)
+    dragon.list.open(buffer_structure.byte_size)(files)
 
-    [ enlist files into json test ]
-    dragon.list.append.buffer(test.json, file.test_json)(test.json)
-    
-    [ enlist files into elf test ]
-    dragon.list.append.buffer(test.elf, file.test_elf)(test.elf)
-    dragon.list.append.buffer(test.elf, file.binary.binary)(test.elf)
-    dragon.list.append.buffer(test.elf, file.binary.elf)(test.elf)
+    [ enlist files into files buffer ]
+    dragon.list.append.buffer(files, file.test_elf)(files)
+    dragon.list.append.buffer(files, file.binary.binary)(files)
+    dragon.list.append.buffer(files, file.binary.elf)(files)
 
-    [ just run tests ]
-    tools.just_run(test.json, test.json.name)()
-    tools.just_run(test.elf, test.elf.name)()
+    [ run test ]
+    tools.just_run(files, test_name)()
 
     [ clean up ]
-    [ return files ]
-    dragon.buffer.return(file.test_json)()
+    [ return file buffers ]
     dragon.buffer.return(file.test_elf)()
     dragon.buffer.return(file.binary.binary)()
     dragon.buffer.return(file.binary.elf)()
 
-    [ return lists ]
-    dragon.list.close(test.json)()
-    dragon.list.close(test.elf)()
+    [ close files list ]
+    dragon.list.close(files)()
 }
